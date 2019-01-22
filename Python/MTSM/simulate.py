@@ -1,3 +1,7 @@
+# MTSM implementation -- Python
+# Solves linear systems defined as y' = Ay + b
+
+### Imports ### 
 import argparse
 import numpy as np
 import scipy.sparse as sp
