@@ -83,7 +83,11 @@ function [MTSM_serial, MTSM_one_serial, MTSM_one_parallel] = simulateExportTimes
     tic;
     [T_2D_parallel,Y_2D_parallel,ORD_2D_parallel] = MTSM_explicit_linear_precalc_one_mtx(dt,tspan,init,A_one_parallel,b_one_parallel,eps,maxORD);
     MTSM_t_parallel_one = toc;
-%     
+
+    u1=Y(end,1:(nRLC-3)/2);
+    u2=Y(end,(nRLC-3)/2+1:end-3);
+    
+    %     
     % MTSM - parallel - one matrix A_hat 
 %     tic;
 %     [T_2D_parallel,Y_2D_parallel,ORD_2D_parallel] = MTSM_explicit_linear_precalc_one_mtx_parallel(dt,tspan,init,A_one_parallel,b_one_parallel,eps,maxORD,S);
@@ -144,20 +148,20 @@ function [MTSM_serial, MTSM_one_serial, MTSM_one_parallel] = simulateExportTimes
 %     
 %      %% Plot: MTSM parallel - one matrix
 %     % MTSM - UC1
-    figure;
-    %subplot(2,1,1);
-    plot(T_2D_parallel, Y_2D_parallel(:,1), '-r', 'LineWidth',1.5);
-    grid on;
-    legend('UC1')
-
-    hold on; 
+%     figure;
+%     %subplot(2,1,1);
+%     plot(T_2D_parallel, Y_2D_parallel(:,1), '-r', 'LineWidth',1.5);
+%     grid on;
+%     legend('UC1')
+% 
+%     hold on; 
 
     % MTSM - UC100
-    plot(T_2D_parallel, Y_2D_parallel(:,nRLC), '--b','LineWidth',1.5); % uc last
-    grid on;
-    legend('UC1' ,['UC',num2str(nRLC,'%u')])
-    TITLE=sprintf('MTSM Parallel One Matrix');
-    title(TITLE);    
+%     plot(T_2D_parallel, Y_2D_parallel(:,nRLC), '--b','LineWidth',1.5); % uc last
+%     grid on;
+%     legend('UC1' ,['UC',num2str(nRLC,'%u')])
+%     TITLE=sprintf('MTSM Parallel One Matrix');
+%     title(TITLE);    
 % 
 %     %% Plots: sparse matrices
 %     % Original A matrix
@@ -222,8 +226,8 @@ function [MTSM_serial, MTSM_one_serial, MTSM_one_parallel] = simulateExportTimes
 %     fprintf('Time of solution Parallel MTSM solver - one mtx: %d seconds \n', MTSM_t_parallel_one+T_prealloc_parallel);
 % 
 %     % errors 
-     fprintf('\n||MTSM serial - MTSM serial one mtx||: %g\n', norm(Y(end,:)-Y_2D_serial(end,:))/(norm(Y_2D_serial(end,:))+1));
-     fprintf('\n||MTSM serial - MTSM parallel one mtx||: %g\n', norm(Y(end,:)-Y_2D_parallel(end,:))/(norm(Y_2D_parallel(end,:))+1));
+%      fprintf('\n||MTSM serial - MTSM serial one mtx||: %g\n', norm(Y(end,:)-Y_2D_serial(end,:))/(norm(Y_2D_serial(end,:))+1));
+%      fprintf('\n||MTSM serial - MTSM parallel one mtx||: %g\n', norm(Y(end,:)-Y_2D_parallel(end,:))/(norm(Y_2D_parallel(end,:))+1));
 % %     fprintf('||MTSM serial - MTSM serial 3D mtx||: %g\n', norm(Y(end,:)-Y_3D(end,:))/(norm(Y_3D(end,:))+1));
 % 
 end
