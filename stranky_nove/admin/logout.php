@@ -1,10 +1,10 @@
 <?php
-    include_once("global.php");
+    #include_once("global.php");
 
     if (!isset($_SESSION['cookie'])) // pokud uzivatel neni prihlasen
     {
         // bude presmerovan na hlavni stranku
-        header ("Location: http://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . "/main.php");
+        header ("Location: http://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . "/index.php");
         ob_end_clean();
         exit();
     }
@@ -13,7 +13,6 @@
         $_SESSION = array();  // smazeme promenne
         session_destroy(); // ukoncime session
         setcookie(session_name(), '', time()-300, '/', '', 0); // smazeme cookie
-
     }
 
 
@@ -23,13 +22,14 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Excel@FIT IS</title>
+    <title>FIT HPC</title>
 </head>
 
 <body>
-    <h1>Cookie smazána.</h1>
+    <h2>Odhlášení úspěšné.</h2>
 
-    <a href="index.php">Zpět na zadání cookie</a> 
+    <a href="../index.php">Zpět na stránky skupiny</a>
+    <a href="index.php">Znovu přihlásit do administrace</a>  
 </body>
 
 </html> 
