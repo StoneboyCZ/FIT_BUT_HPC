@@ -25,4 +25,8 @@
         'dir' => $path.'/storage/users'
     ]);
 
+    $categories = new \Filebase\Database([
+        'dir' => $path.'/storage/categories'
+    ]);
+
 ?>

@@ -1,0 +1,11 @@
+{
+    "__created_at": 1562060378,
+    "__updated_at": 1562060378,
+    "data": {
+        "id": 1,
+        "userName": "iveigend",
+        "password": "7c6e4ed9c1fe1be3bdfd51a709cfe2a851018a668a1d0ce5d8df2b72963ba4c4",
+        "role": "admin",
+        "status": 0
+    }
+}

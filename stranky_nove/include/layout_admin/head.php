@@ -15,6 +15,7 @@
   <meta charset="UTF-8">
   <title>HPC FIT | Administrace</title>
   <link rel="stylesheet" href="../style.css">
+  <script src="../include/libs/jquery-3.4.1.min.js"></script>
 </head>
 
 <body>

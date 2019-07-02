@@ -18,6 +18,7 @@
   <meta charset="UTF-8">
   <title>HPC FIT</title>
   <link rel="stylesheet" href="style.css">
+  <script src="jquery-3.4.1.min.js"></script>
 </head>
 
 <body>
