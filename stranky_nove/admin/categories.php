@@ -12,6 +12,7 @@
         $item->id = $id;
         $item->name = $_POST['categoryName'];
         $item->order = $_POST['order'];
+        $item->articles = [];
         $item->status = 0;
         
         $item->save();

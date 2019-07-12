@@ -2,7 +2,7 @@
         <ul>
         <li><a href="users.php">Správa uživatelů</a></li>
         <li><a href="categories.php">Správa kategorií</a></li>
-        <li class="menu_label">Články</li>  
+        <li><a href="articles.php">Správa článků</a></li>  
         
         <br />
         <li><a href="../index.php">Zpět na stránky skupiny</a></li>

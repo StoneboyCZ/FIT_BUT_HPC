@@ -8,7 +8,8 @@
             echo '<li class="menu_label">'.$category->name.'</li>';  
           } 
         ?>
-      
+        </ul>
+      <ul>
       <li><a href="admin/index.php">Administrace</a></li>
         </ul> 
 

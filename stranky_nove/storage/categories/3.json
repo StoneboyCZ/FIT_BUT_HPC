@@ -1,0 +1,11 @@
+{
+    "__created_at": 1562849653,
+    "__updated_at": 1562849678,
+    "data": {
+        "id": 3,
+        "name": "Test",
+        "order": "1",
+        "articles": [],
+        "status": 1
+    }
+}
