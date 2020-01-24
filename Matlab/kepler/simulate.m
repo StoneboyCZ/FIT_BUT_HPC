@@ -1,4 +1,4 @@
-function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, T_TAYLOR_GN_ordered_v2, T_TAYLOR_VS] =  simulate(display)
+function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL_GN_v2_TIME, DIV_GN_v2_TIME, DIV_VS_TIME] =  simulate(display)
     close all;
     
     %% kepler problem
@@ -393,7 +393,7 @@ function [VS_T,VS_Y,VS_TIME,VS_ORD,VS_ANAL,GN_v1_T,GN_v1_Y,GN_v1_TIME,GN_v1_ORD,
     
     tic
     [GN_v2_T,GN_v2_Y,GN_v2_ORD,~] = explicitTaylorMult_GNPV_ver2_no_DY4(dt,tspan,init,A,A2,A3,A5,b,ij,ijk,ijklm,tol,ind,maxORD);
-    GN_v2_TIME_NODY4=toc
+    GN_v2_TIME_NODY4=toc;
     
     
     % VS implementation

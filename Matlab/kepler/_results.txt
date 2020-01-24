@@ -1,0 +1,9 @@
+runs: 50
+=========================================
+ode45 sub: 0.0133222
+ode45 div: 0.0128305
+ode45 basic: 0.0088676
+ode23 sub: 0.495223
+ode15s sub: 0.227968
+taylor GN ordered v2: 0.15578
+taylor VS: 0.233172
