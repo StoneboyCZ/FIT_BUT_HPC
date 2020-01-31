@@ -1,0 +1,18 @@
+runs: 5
+ m1: 0.1
+ m2: 0.5
+ L1: 1
+ L2: 2
+ g: 9.81
+ h: 0.01
+ h_mtsm: 0.01
+ eps: 1e-12
+ eps_mtsm: 0.1
+===================================================================
+time ode45 solver (original): 0.0993678
+time ode45 solver (auxillary system): 0.092461
+time ode45 solver (auxillary system + constants): 0.0946438
+time ode45 solver (auxillary system + constants + no division): 0.121128
+time Taylor solver: 0.122376
+time Taylor solver (GN v1): 0.13736
+time Taylor solver (GN v2): 0.141913

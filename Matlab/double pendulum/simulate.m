@@ -1,15 +1,15 @@
 %%% Double pendulum - auxillary and non-auxillary system
-function [T_OUT,T_AUX_OUT,T_AUX_CONST_OUT,T_AUX_CONST_DIV_OUT,T_TAYLOR_OUT,T_TAYLOR_GN_V1_OUT,T_TAYLOR_GN_V2_OUT] = simulate(display)
+function [T_OUT,T_AUX_OUT,T_AUX_CONST_OUT,T_AUX_CONST_DIV_OUT,T_TAYLOR_OUT,T_TAYLOR_GN_V1_OUT,T_TAYLOR_GN_V2_OUT] = simulate(display,m1,m2,L1,L2,g,h,h_mtsm,eps,eps_mtsm,tmax)
     % clear
     %clc
     close all
     
     %%  parameters of the system
-    data.m1 = 0.1;
-    data.m2 = 0.5;
-    data.L1 = 1;
-    data.L2 = 2;
-    data.g = 9.81;
+    data.m1 = m1; %0.1;
+    data.m2 = m2; %0.5;
+    data.L1 = L1; %1;
+    data.L2 = L2; %2;
+    data.g = g; %9.81;
        
     data.A = data.L1*data.m1;
     data.B = data.L1*data.m2;
@@ -51,16 +51,12 @@ function [T_OUT,T_AUX_OUT,T_AUX_CONST_OUT,T_AUX_CONST_DIV_OUT,T_TAYLOR_OUT,T_TAY
     ne_aux_div=length(y0_aux_div); % number of equations
 
 
-% MTSM solver options
-h = 0.01;
-h_mtsm = 0.01;
+
 
 %%% Solvers options
-tmax = 6;
 tspan = [0 tmax];
 tspan_ode = 0:h:tmax;
-eps=1e-12;
-eps_mtsm = 1e-1; 
+
 
 
 % % MATLAB solvers options
@@ -297,17 +293,17 @@ T_TAYLOR_GN_V2_OUT=toc;
 %%% ERRORS %%%%
 if display
     fprintf('\n****** ERRORS t=TMAX ******\n');
-    fprintf('||Y(tmax)-Y_aux_ode45(tmax)||: %g \n',norm(Y(end,:)-Y_aux(end,1:4)));
-    fprintf('||Y(tmax)-Y_aux_const_ode45(tmax)||: %g \n',norm(Y(end,:)-Y_aux_const(end,1:4)));
-    fprintf('||Y(tmax)-Y_aux_const_div_ode45(tmax)||: %g \n',norm(Y(end,:)-Y_aux_const_div(end,1:4)));
+    fprintf('||Y(tmax)-Y_aux_ode45(tmax)||: %g \n',cnorm(Y(end,:),Y_aux(end,1:4)));
+    fprintf('||Y(tmax)-Y_aux_const_ode45(tmax)||: %g \n',cnorm(Y(end,:),Y_aux_const(end,1:4)));
+    fprintf('||Y(tmax)-Y_aux_const_div_ode45(tmax)||: %g \n',cnorm(Y(end,:),Y_aux_const_div(end,1:4)));
     
-    fprintf('||Y(tmax)-Y_aux_ode113(tmax)||: %g \n',norm(Y_ODE113(end,:)-Y_aux_ODE113(end,1:4)));
-    fprintf('||Y(tmax)-Y_aux_const_ode113(tmax)||: %g \n',norm(Y_ODE113(end,:)-Y_aux_const_ODE113(end,1:4)));
-    fprintf('||Y(tmax)-Y_aux_const_div_ode113(tmax)||: %g \n',norm(Y_ODE113(end,:)-Y_aux_const_div_ODE113(end,1:4)));
+    fprintf('||Y(tmax)-Y_aux_ode113(tmax)||: %g \n',cnorm(Y_ODE113(end,:),Y_aux_ODE113(end,1:4)));
+    fprintf('||Y(tmax)-Y_aux_const_ode113(tmax)||: %g \n',cnorm(Y_ODE113(end,:),Y_aux_const_ODE113(end,1:4)));
+    fprintf('||Y(tmax)-Y_aux_const_div_ode113(tmax)||: %g \n',cnorm(Y_ODE113(end,:),Y_aux_const_div_ODE113(end,1:4)));
     
-    fprintf('||Y(tmax)-Y_Taylor(tmax)||: %g \n',norm(Y(end,:)-Y_Taylor(1:4,end)'));
-    fprintf('||Y(tmax)-Y_Taylor_GN v1(tmax)||: %g \n',norm(Y(end,:)-Y_Taylor_GN_v1(1:4,end)'));
-    fprintf('||Y(tmax)-Y_Taylor_GN v2(tmax)||: %g \n',norm(Y(end,:)-Y_Taylor_GN_v2(1:4,end)'));
+    fprintf('||Y(tmax)-Y_Taylor(tmax)||: %g \n',cnorm(Y(end,:),Y_Taylor(1:4,end)'));
+    fprintf('||Y(tmax)-Y_Taylor_GN v1(tmax)||: %g \n',cnorm(Y(end,:),Y_Taylor_GN_v1(1:4,end)'));
+    fprintf('||Y(tmax)-Y_Taylor_GN v2(tmax)||: %g \n',cnorm(Y(end,:),Y_Taylor_GN_v2(1:4,end)'));
 
 
     %%% TIME OF COMPUTATIONS %%%%
