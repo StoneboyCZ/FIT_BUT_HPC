@@ -1,19 +1,20 @@
-function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL_GN_v2_TIME, DIV_GN_v2_TIME, DIV_VS_TIME] =  simulate(display)
+function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL_GN_v2_TIME, DIV_GN_v2_TIME, DIV_VS_TIME] =  simulate(display,tol,tol_ode,tmax,dt,dt_ode,e)
     close all;
     
-    %% kepler problem
-    e = 0.75; % eccentricity
-    
-    % parameters of calculation
-    tol = 1e-8;
-    tol_ode = 1e-11;
-
-    tmax = 12; %2*pi; does not work for ODE solvers
     tspan = [0, tmax];
+    tspan_ode = 0:dt_ode:tmax;
 
-    dt = 0.01;
-    %tspan_ode = 0:dt:tmax;
-    tspan_ode = 0:dt:tmax;
+%     %% kepler problem
+%     e = 0.75; % eccentricity
+%     
+%     % parameters of calculation
+%     tol = 1e-8;
+%     tol_ode = 1e-11;
+% 
+%     tmax = 12; %2*pi; does not work for ODE solvers
+%     tspan = [0, tmax];
+% 
+%     dt = 0.01;
     
     y1_init = 1-e;
     y2_init = 0;
@@ -176,16 +177,16 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
         ANAL_ODE15s_AUX_SUB = (Y_ODE15s_AUX_SUB(:,1)+e).^2 + Y_ODE15s_AUX_SUB(:,2).^2/(1-e^2);
 
         
-        fprintf('||1-ANAL_ODE45||: %g \n',norm(Y_RES-ANAL_ODE45));
-        fprintf('||1-ANAL_ODE45_AUX_SQRT||: %g \n',norm(Y_RES-ANAL_ODE45_AUX_SQRT));
-        fprintf('||1-ANAL_ODE45_AUX_DIV||: %g \n',norm(Y_RES-ANAL_ODE45_AUX_DIV));
-        fprintf('||1-ANAL_ODE45_AUX_SUB||: %g \n',norm(Y_RES-ANAL_ODE45_AUX_SUB));
-        fprintf('||1-ANAL_ODE23_AUX_SUB||: %g \n',norm(Y_RES-ANAL_ODE23_AUX_SUB));
-        fprintf('||1-ANAL_ODE15s_AUX_SUB||: %g \n\n',norm(Y_RES-ANAL_ODE15s_AUX_SUB));
-        fprintf('||1-FULL_ANAL_TAYLOR_GN_v2||: %g \n',norm(Y_RES-FULL_GN_v2_ANAL));
-        fprintf('||1-FULL_ANAL_TAYLOR_VS||: %g \n',norm(Y_RES-FULL_VS_ANAL));
-        fprintf('||1-DIV_ANAL_TAYLOR_GN_v2||: %g \n',norm(Y_RES-DIV_GN_v2_ANAL));
-        fprintf('||1-DIV_ANAL_TAYLOR_VS||: %g \n',norm(Y_RES-DIV_VS_ANAL));        
+        fprintf('||1-ANAL_ODE45||: %g \n',cnorm(Y_RES,ANAL_ODE45));
+        fprintf('||1-ANAL_ODE45_AUX_SQRT||: %g \n',cnorm(Y_RES,ANAL_ODE45_AUX_SQRT));
+        fprintf('||1-ANAL_ODE45_AUX_DIV||: %g \n',cnorm(Y_RES,ANAL_ODE45_AUX_DIV));
+        fprintf('||1-ANAL_ODE45_AUX_SUB||: %g \n',cnorm(Y_RES,ANAL_ODE45_AUX_SUB));
+        fprintf('||1-ANAL_ODE23_AUX_SUB||: %g \n',cnorm(Y_RES,ANAL_ODE23_AUX_SUB));
+        fprintf('||1-ANAL_ODE15s_AUX_SUB||: %g \n\n',cnorm(Y_RES,ANAL_ODE15s_AUX_SUB));
+        fprintf('||1-FULL_ANAL_TAYLOR_GN_v2||: %g \n',cnorm(Y_RES,FULL_GN_v2_ANAL));
+        fprintf('||1-FULL_ANAL_TAYLOR_VS||: %g \n',cnorm(Y_RES,FULL_VS_ANAL));
+        fprintf('||1-DIV_ANAL_TAYLOR_GN_v2||: %g \n',cnorm(Y_RES,DIV_GN_v2_ANAL));
+        fprintf('||1-DIV_ANAL_TAYLOR_VS||: %g \n',cnorm(Y_RES,DIV_VS_ANAL));        
     end
 end
 
@@ -391,9 +392,9 @@ function [VS_T,VS_Y,VS_TIME,VS_ORD,VS_ANAL,GN_v1_T,GN_v1_Y,GN_v1_TIME,GN_v1_ORD,
     [GN_v2_T,GN_v2_Y,GN_v2_ORD,~] = explicitTaylorMult_GNPV_ver2_full(dt,tspan,init,A,A2,A3,A4,A5,b,ij,ijk,ijkl,ijklm,tol,ind,maxORD);
     GN_v2_TIME=toc;
     
-    tic
-    [GN_v2_T,GN_v2_Y,GN_v2_ORD,~] = explicitTaylorMult_GNPV_ver2_no_DY4(dt,tspan,init,A,A2,A3,A5,b,ij,ijk,ijklm,tol,ind,maxORD);
-    GN_v2_TIME_NODY4=toc;
+%     tic
+%     [GN_v2_T,GN_v2_Y,GN_v2_ORD,~] = explicitTaylorMult_GNPV_ver2_no_DY4(dt,tspan,init,A,A2,A3,A5,b,ij,ijk,ijklm,tol,ind,maxORD);
+%     GN_v2_TIME_NODY4=toc;
     
     
     % VS implementation
