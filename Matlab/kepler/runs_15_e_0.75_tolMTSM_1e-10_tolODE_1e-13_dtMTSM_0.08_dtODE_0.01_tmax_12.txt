@@ -1,0 +1,16 @@
+runs: 15
+ e: 0.75
+ tol_MTSM: 1e-10
+ tol_ODE: 1e-13
+ dt_MTSM: 0.08
+ dt_ODE: 0.01
+ tmax: 12
+=========================================
+ode45 sub: 0.0242717
+ode45 div: 0.0234574
+ode45 basic: 0.0142603
+ode23 sub: 2.13568
+ode15s sub: 0.536848
+taylor GN ordered v2 (division not substituted): 0.0891525
+taylor GN ordered v2: 0.0380779
+taylor VS: 2.87126

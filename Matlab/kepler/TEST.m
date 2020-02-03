@@ -5,12 +5,12 @@ function TEST(numruns)
     e = 0.75; % eccentricity
     
     % parameters of calculation
-    tol = 1e-8;
-    tol_ode = 1e-13;
+    tol = 1e-12;
+    tol_ode = 3e-14;
 
-    tmax = 12; %2*pi; does not work for ODE solvers
+    tmax = 14; %2*pi; does not work for ODE solvers
     
-    dt = 0.085;
+    dt = 0.07;
     dt_ode = 0.01;
     
     clc
