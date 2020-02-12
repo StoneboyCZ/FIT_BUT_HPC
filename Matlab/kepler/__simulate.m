@@ -4,14 +4,24 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
     tspan = [0, tmax];
     tspan_ode = 0:dt_ode:tmax;
 
-    %% initial conditions
+%     %% kepler problem
+%     e = 0.75; % eccentricity
+%     
+%     % parameters of calculation
+%     tol = 1e-8;
+%     tol_ode = 1e-11;
+% 
+%     tmax = 12; %2*pi; does not work for ODE solvers
+%     tspan = [0, tmax];
+% 
+%     dt = 0.01;
+    
     y1_init = 1-e;
     y2_init = 0;
     y3_init = 0;
     y4_init = sqrt((1+e)/(1-e));
 
     y0 = [y1_init;y2_init;y3_init;y4_init];
-
     y5_init = sqrt(y1_init*y1_init+y2_init*y2_init)^3;
     y6_init = sqrt(y1_init*y1_init+y2_init*y2_init);
     y0_aux_sqrt = [y0;
@@ -22,74 +32,46 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
     y7_init = 1/y5_init;
     y8_init = 1/y6_init;
     y0_aux_div = [y0_aux_sqrt;
-         y7_init;
+         y7_init
          y8_init
-    ];
+     ];
     
     y9_init = y1_init*y3_init;
     y10_init = y2_init*y4_init;
     y11_init = y1_init^2;
     y12_init = y2_init^2;
-    
-    
-    y0_aux_div_brackets = [y0_aux_div;
-         y9_init;
-         y10_init;
-         y11_init;
-         y12_init
-    ];
-    
     y13_init = y9_init + y10_init;
     y14_init = y11_init + y12_init;
     y15_init = y6_init*y13_init;
     y16_init = y8_init*y13_init;
-    
-    y0_aux_div_full = [y0_aux_div_brackets;
+    y0_aux_sub = [y0_aux_div;
+        y9_init; 
+        y10_init;
+        y11_init;
+        y12_init;
         y13_init;
         y14_init;
         y15_init;
         y16_init;
     ];
- 
-
+     
     ne=length(y0);
     ne_aux_sqrt=length(y0_aux_sqrt);
-    ne_aux_div = length(y0_aux_div);
-    ne_aux_div_brackets = length(y0_aux_div);
-    ne_aux_div_full = length(y0_aux_sub);
+    ne_aux_div= length(y0_aux_div);
+    ne_aux_sub1= length(y0_aux_sub);
     % % MATLAB solvers options
     ABSTOL=tol_ode*ones(1,ne);
     ABSTOL_aux_sqrt=tol_ode*ones(1,ne_aux_sqrt);
     ABSTOL_aux_div=tol_ode*ones(1,ne_aux_div);
-    ABSTOL_aux_div_brackets=tol_ode*ones(1,ne_aux_div_brackets);
-    ABSTOL_aux_div_full=tol_ode*ones(1,ne_aux_div_full);
+    ABSTOL_aux_sub=tol_ode*ones(1,ne_aux_sub1);
     % options = odeset('RelTol',tol,'AbsTol',ABSTOL, 'Vectorized','on');
     options = odeset('RelTol',tol_ode,'AbsTol',ABSTOL);
     options_aux_sqrt = odeset('RelTol',tol_ode,'AbsTol',ABSTOL_aux_sqrt);
     options_aux_div = odeset('RelTol',tol_ode,'AbsTol',ABSTOL_aux_div);
-    options_aux_div_brackets = odeset('RelTol',tol_ode,'AbsTol',ABSTOL_aux_div_brackets);
-    options_aux_div_full = odeset('RelTol',tol_ode,'AbsTol',ABSTOL_aux_div_full);
+    options_aux_sub = odeset('RelTol',tol_ode,'AbsTol',ABSTOL_aux_sub);
 
-    %% Results are saved in the variable results
-    % results.<type>.<solver>.time
-    % type: kepler, kepler_aux_div, 
-    
-    
-    
-        
-    %% Matlab solvers, basic systems
-    % basic system
-    %     r = sqrt(y(1)*y(1) + y(2)*y(2));
-    %     r3 = r*r*r;
-    % 
-    %     dy = zeros(4,1);
-    %     dy(1) = y(3);
-    %     dy(2) = y(4);
-    %     dy(3) = -(y(1)/r3); 
-    %     dy(4) = -(y(2)/r3);
-    
-    
-    % ODE45 
+
+    %% ODE45 
     tic;
     [T_ODE45,Y_ODE45] = ode45(@(t,y) kepler(t,y),tspan_ode,y0,options);
     T_ODE45_basic = toc;
@@ -102,7 +84,6 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
         TITLE=sprintf("Kepler problem (e=%f) - ODE45",e);
         title(TITLE)
     end
-    
     % ODE solver - sqrtAux
     tic;
     [T_ODE45_AUX_SQRT,Y_ODE45_AUX_SQRT] = ode45(@(t,y) kepler_aux_sqrt(t,y),tspan_ode,y0_aux_sqrt,options_aux_sqrt);
@@ -452,3 +433,5 @@ function [VS_T,VS_Y,VS_TIME,VS_ORD,VS_ANAL,GN_v1_T,GN_v1_Y,GN_v1_TIME,GN_v1_ORD,
     GN_v1_T = 0; GN_v1_Y = 0;GN_v1_TIME = 0; GN_v1_ORD = 0; GN_v1_ANAL = 0;
     
 end
+
+

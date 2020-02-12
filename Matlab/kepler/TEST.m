@@ -16,6 +16,8 @@ function TEST(numruns)
     clc
     close all
     
+    global data;
+    
     T_ODE45_sub_ALL = [];
     T_ODE45_div_ALL = [];
     T_ODE45_basic_ALL = [];
