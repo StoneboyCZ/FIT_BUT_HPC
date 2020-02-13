@@ -77,7 +77,7 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
 
     %% Results are saved in the variable results
     % results.<type>.<solver>.time
-    % type: kepler, kepler_aux_sqrt, kepler_aux_div_brackets, kepler_aux_div_full 
+    % type: kepler, kepler_aux_sqrt,kepler_aux_div, kepler_aux_div_brackets, kepler_aux_div_full 
     
     
     
@@ -188,7 +188,7 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
 
     
     %% MTSM - full substitution
-    init = y0_aux_sub;
+    init = y0_aux_div_full;
 %     [FULL_VS_T,FULL_VS_Y,FULL_VS_TIME,FULL_VS_ORD,FULL_VS_ANAL,FULL_GN_v2_T,FULL_GN_v2_Y,FULL_GN_v2_TIME,FULL_GN_v2_ORD,FULL_GN_v2_ANAL] = taylor_fullAux(dt,tspan,init,tol,maxORD,e,display);
     taylor_fullAux(dt,tspan,init,tol,maxORD,e,display);
    
@@ -303,6 +303,8 @@ function taylor_divAux(dt,tspan,init,tol,maxORD,e,display)
     results.kepler_div.mtsm_basic.time = VS_TIME;
     results.kepler_div.mtsm_basic.T = VS_T;
     results.kepler_div.mtsm_basic.Y = VS_Y;
+    results.kepler_div.mtsm_basic.ORD = VS_ORD;
+    results.kepler_div.mtsm_basic.analytical = (VS_Y(1,:)+e).^2 + VS_Y(2,:).^2/(1-e^2);
     
     % GNPV implemetation
     tic
@@ -312,6 +314,8 @@ function taylor_divAux(dt,tspan,init,tol,maxORD,e,display)
     results.kepler_div.mtsm_v2.time = GN_v2_TIME;
     results.kepler_div.mtsm_v2.T = GN_v2_T;
     results.kepler_div.mtsm_v2.Y = GN_v2_Y;
+    results.kepler_div.mtsm_v2.ORD = GN_v2_ORD;
+    results.kepler_div.mtsm_v2.analytical = (GN_v2_Y(1,:)+e).^2 + GN_v2_Y(2,:).^2/(1-e^2);
  
     if display
         figure
@@ -335,13 +339,6 @@ function taylor_divAux(dt,tspan,init,tol,maxORD,e,display)
         TITLE=sprintf("Kepler problem (e=%f) - TAYLOR VS (div ORD)",e);
         title(TITLE)
     end
-    
-    % analytical solution
-    results.kepler_div.mtsm_basic.analytical = (VS_Y(1,:)+e).^2 + VS_Y(2,:).^2/(1-e^2);
-    results.kepler_div.mtsm_v2.analytical = (GN_v2_Y(1,:)+e).^2 + GN_v2_Y(2,:).^2/(1-e^2);
-    
-    GN_v1_T = 0; GN_v1_Y = 0;GN_v1_TIME = 0; GN_v1_ORD = 0; GN_v1_ANAL = 0;
-    
 end
 
 %function [VS_T,VS_Y,VS_TIME,VS_ORD,VS_ANAL,GN_T,GN_Y,GN_TIME,GN_ORD,GN_ANAL] = taylor_fullAux(dt,tspan,init,tol,maxORD,e,display)
@@ -448,6 +445,8 @@ function taylor_fullAux(dt,tspan,init,tol,maxORD,e,display)
     results.kepler_div_full.mtsm_basic.time = VS_TIME;
     results.kepler_div_full.mtsm_basic.T = VS_T;
     results.kepler_div_full.mtsm_basic.Y = VS_Y;
+    results.kepler_div_full.mtsm_basic.ORD = VS_ORD;
+    results.kepler_div_full.mtsm_basic.analytical = (VS_Y(1,:)+e).^2 + VS_Y(2,:).^2/(1-e^2);
     
     % GNPV implemetation
     tic
@@ -457,6 +456,8 @@ function taylor_fullAux(dt,tspan,init,tol,maxORD,e,display)
     results.kepler_div_full.mtsm_v2.time = GN_TIME;
     results.kepler_div_full.mtsm_v2.T = GN_T;
     results.kepler_div_full.mtsm_v2.Y = GN_Y;
+    results.kepler_div_full.mtsm_v2.ORD = GN_ORD;
+    results.kepler_div_full.mtsm_v2.analytical = (GN_Y(1,:)+e).^2 + GN_Y(2,:).^2/(1-e^2);
     
     if display
         figure
@@ -480,11 +481,6 @@ function taylor_fullAux(dt,tspan,init,tol,maxORD,e,display)
         TITLE=sprintf("Kepler problem (e=%f) - TAYLOR VS (ORD)",e);
         title(TITLE)
     end
-    
-    % analytical solution
-    results.kepler_div_full.mtsm_basic.analytical = (VS_Y(1,:)+e).^2 + VS_Y(2,:).^2/(1-e^2);
-    results.kepler_div_full.mtsm_v2.analytical = (GN_Y(1,:)+e).^2 + GN_Y(2,:).^2/(1-e^2);
-   
 end
 
 
