@@ -98,6 +98,7 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
     [T_ODE45,Y_ODE45] = ode45(@(t,y) kepler(t,y),tspan_ode,y0,options);
     T_ODE45_basic = toc;
 
+    results.kepler.n = length(y0);
     results.kepler.ode45.time = T_ODE45_basic;
     results.kepler.ode45.T = T_ODE45;
     results.kepler.ode45.Y = Y_ODE45;
@@ -112,10 +113,18 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
     end
     
     %% ODE solver - aux sqrt
+    %     dy(1) = y(3);
+    %     dy(2) = y(4);
+    %     dy(3) = -y(1)/y(5); 
+    %     dy(4) = -y(2)/y(5);
+    %     dy(5) = 3*y(6)*(y(1)*y(3)+y(2)*y(4));
+    %     dy(6) = (y(1)*y(3)+y(2)*y(4))/y(6);
+    
     tic;
     [T_ODE45_AUX_SQRT,Y_ODE45_AUX_SQRT] = ode45(@(t,y) kepler_aux_sqrt(t,y),tspan_ode,y0_aux_sqrt,options_aux_sqrt);
     T_ODE45_sqrt = toc;
 
+    results.kepler_sqrt.n = length(y0_aux_sqrt);
     results.kepler_sqrt.ode45.time = T_ODE45_sqrt;
     results.kepler_sqrt.ode45.T = T_ODE45_AUX_SQRT;
     results.kepler_sqrt.ode45.Y = Y_ODE45_AUX_SQRT;
@@ -195,9 +204,15 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
     
     if display
         % Output 
-        fprintf('==== TIMES [s] ====\n')
-        fprintf('ode45: %g   steps: %d\n',T_ODE45_basic, length(T_ODE45)-1);
-        fprintf('ode45_sqrt: %g   steps: %d\n',T_ODE45_sqrt, length(T_ODE45_AUX_SQRT)-1);
+        fprintf('==== SYSTEM OF %d EQUATIONS (BASIC SYSTEM) ====\n',results.kepler.n); 
+        fprintf('ode45: %g   steps: %d\n', results.kepler.ode45.time, length(results.kepler.ode45.T)-1);
+        
+        fprintf('\n\n==== SYSTEM OF %d EQUATIONS (WITHOUT SQUARE ROOT)====\n',results.kepler_sqrt.n); 
+        fprintf('ode45_sqrt: %g   steps: %d\n',results.kepler_sqrt.ode45.time, length(results.kepler_sqrt.ode45.T)-1);
+
+        fprintf('\n\n==== SYSTEM OF %d EQUATIONS (WITHOUT SQUARE ROOT)====\n',results.kepler_sqrt.n); 
+        fprintf('ode45_div: %g   steps: %d\n',results.kepler_div.ode45.time, length(results.kepler_div.ode45.T)-1);
+
         fprintf('ode45_div: %g   steps: %d\n',T_ODE45_div, length(T_ODE45_AUX_DIV)-1);
         fprintf('ode45_sub: %g   steps: %d\n',T_ODE45_sub, length(T_ODE45_AUX_SUB)-1);
         fprintf('ode23_sub: %g   steps: %d\n',T_ODE23_sub, length(T_ODE23_AUX_SUB)-1);
