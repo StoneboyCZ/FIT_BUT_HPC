@@ -74,6 +74,8 @@ while t(i-1)+ls_tol<tspan(1,2)
     A4y=A4*(DY(ijkl(:,1),1).*DY(ijkl(:,2),1).*DY(ijkl(:,3),1).*DY(ijkl(:,4),1));
     A5y=A5*(DY(ijklm(:,1),1).*DY(ijklm(:,2),1).*DY(ijklm(:,3),1).*DY(ijklm(:,4),1).*DY(ijklm(:,5),1));
     
+    
+    
     DY(:,2)=h*(Ay+A2y+A3y+A4y+A5y); % first derivative
     
     y(:,i)=y(:,i)+DY(:,2); % first term (first derivative)

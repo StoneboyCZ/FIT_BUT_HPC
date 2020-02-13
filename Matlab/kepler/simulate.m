@@ -3,9 +3,12 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
     
     global results
     
+    Y_ANAL = 1;
+    
     tspan = [0, tmax];
-    tspan_ode = 0:dt_ode:tmax;
-
+    %tspan_ode = 0:dt_ode:tmax;
+    tspan_ode = tspan;
+    
     %% MTSM nonlinear solver
     maxORD = 60;
     
@@ -62,6 +65,7 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
     ne_aux_div = length(y0_aux_div);
     ne_aux_div_brackets = length(y0_aux_div_brackets);
     ne_aux_div_full = length(y0_aux_div_full);
+    
     % % MATLAB solvers options
     ABSTOL=tol_ode*ones(1,ne);
     ABSTOL_aux_sqrt=tol_ode*ones(1,ne_aux_sqrt);
@@ -78,8 +82,6 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
     %% Results are saved in the variable results
     % results.<type>.<solver>.time
     % type: kepler, kepler_aux_sqrt,kepler_aux_div, kepler_aux_div_brackets, kepler_aux_div_full 
-    
-    
     
         
     %% Matlab solvers, basic systems
@@ -98,10 +100,12 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
     [T_ODE45,Y_ODE45] = ode45(@(t,y) kepler(t,y),tspan_ode,y0,options);
     T_ODE45_basic = toc;
 
+    
     results.kepler.n = length(y0);
     results.kepler.ode45.time = T_ODE45_basic;
     results.kepler.ode45.T = T_ODE45;
     results.kepler.ode45.Y = Y_ODE45;
+    results.kepler.ode45.norm = cnorm(Y_ANAL,(results.kepler.ode45.Y(:,1)+e).^2 + results.kepler.ode45.Y(:,2).^2/(1-e^2));
 
     if display
         figure
@@ -128,6 +132,7 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
     results.kepler_sqrt.ode45.time = T_ODE45_sqrt;
     results.kepler_sqrt.ode45.T = T_ODE45_AUX_SQRT;
     results.kepler_sqrt.ode45.Y = Y_ODE45_AUX_SQRT;
+    results.kepler_sqrt.ode45.norm = cnorm(Y_ANAL,(results.kepler_sqrt.ode45.Y(:,1)+e).^2 + results.kepler_sqrt.ode45.Y(:,2).^2/(1-e^2));
     
     if display
         figure
@@ -138,8 +143,7 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
         title(TITLE)
     end
     
-    %% 
-    %%%   ODE solver - aux div
+    %%   ODE solver - div
     %     dy(1) = y(3);
     %     dy(2) = y(4);
     %     dy(3) = -y(1)*y(7); 
@@ -148,6 +152,9 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
     %     dy(6) = y(1)*y(3)*y(8)+y(2)*y(4)*y(8); 
     %     dy(7) = -3*y(6)*y(1)*y(3)*y(7)*y(7)-3*y(6)*y(2)*y(4)*y(7)*y(7); 
     %     dy(8) = -y(1)*y(3)*y(8)*y(8)*y(8)-y(2)*y(4)*y(8)*y(8)*y(8);
+    
+    results.kepler_div.n = length(y0_aux_div);
+    
     tic;
     [T_ODE45_AUX_DIV,Y_ODE45_AUX_DIV] = ode45(@(t,y) kepler_aux_div(t,y),tspan_ode,y0_aux_div,options_aux_div);
     T_ODE45_div = toc;
@@ -155,6 +162,34 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
     results.kepler_div.ode45.time = T_ODE45_div;
     results.kepler_div.ode45.T = T_ODE45_AUX_DIV;
     results.kepler_div.ode45.Y = Y_ODE45_AUX_DIV;
+    results.kepler_div.ode45.norm = cnorm(Y_ANAL,(results.kepler_div.ode45.Y(:,1)+e).^2 + results.kepler_div.ode45.Y(:,2).^2/(1-e^2));
+    
+    tic;
+    [T_ODE23_AUX_DIV,Y_ODE23_AUX_DIV] = ode23(@(t,y) kepler_aux_div(t,y),tspan_ode,y0_aux_div,options_aux_div);
+    T_ODE23_div = toc;
+
+    results.kepler_div.ode23.time = T_ODE23_div;
+    results.kepler_div.ode23.T = T_ODE23_AUX_DIV;
+    results.kepler_div.ode23.Y = Y_ODE23_AUX_DIV;
+    results.kepler_div.ode23.norm = cnorm(Y_ANAL,(results.kepler_div.ode23.Y(:,1)+e).^2 + results.kepler_div.ode23.Y(:,2).^2/(1-e^2));
+    
+    tic;
+    [T_ODE15s_AUX_DIV,Y_ODE15s_AUX_DIV] = ode15s(@(t,y) kepler_aux_div(t,y),tspan_ode,y0_aux_div,options_aux_div);
+    T_ODE15s_div = toc;
+
+    results.kepler_div.ode15s.time = T_ODE15s_div;
+    results.kepler_div.ode15s.T = T_ODE15s_AUX_DIV;
+    results.kepler_div.ode15s.Y = Y_ODE15s_AUX_DIV;
+    results.kepler_div.ode15s.norm = cnorm(Y_ANAL,(results.kepler_div.ode15s.Y(:,1)+e).^2 + results.kepler_div.ode15s.Y(:,2).^2/(1-e^2));
+    
+    tic;
+    [T_ODE113_AUX_DIV,Y_ODE113_AUX_DIV] = ode113(@(t,y) kepler_aux_div(t,y),tspan_ode,y0_aux_div,options_aux_div);
+    T_ODE113_div = toc;
+
+    results.kepler_div.ode113.time = T_ODE113_div;
+    results.kepler_div.ode113.T = T_ODE113_AUX_DIV;
+    results.kepler_div.ode113.Y = Y_ODE113_AUX_DIV;
+    results.kepler_div.ode113.norm = cnorm(Y_ANAL,(results.kepler_div.ode113.Y(:,1)+e).^2 + results.kepler_div.ode113.Y(:,2).^2/(1-e^2)); 
     
     if display
         figure
@@ -169,80 +204,122 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
 %     [DIV_VS_T,DIV_VS_Y,DIV_VS_TIME,DIV_VS_ORD,DIV_VS_ANAL,DIV_GN_v1_T,DIV_GN_v1_Y,DIV_GN_v1_TIME,DIV_GN_v1_ORD,DIV_GN_v1_ANAL,DIV_GN_v2_T,DIV_GN_v2_Y,DIV_GN_v2_TIME,DIV_GN_v2_ORD,DIV_GN_v2_ANAL] = taylor_divAux(dt,tspan,init,tol,maxORD,e,display);
     taylor_divAux(dt,tspan,init,tol,maxORD,e,display);
     
-    % ODE solver - aux sub
-    tic;
-    [T_ODE45_AUX_SUB,Y_ODE45_AUX_SUB] = ode45(@(t,y) kepler_aux_sub(t,y),tspan_ode,y0_aux_sub,options_aux_sub);
-    T_ODE45_sub = toc;
+    %% Full substitution
+    %     dy(1) = y(3);
+    %     dy(2) = y(4);
+    %     dy(3) = -y(1)*y(7); 
+    %     dy(4) = -y(2)*y(7); 
+    %     dy(5) = 3*y(15);
+    %     dy(6) = y(16);
+    %     dy(7) = -3*y(15)*y(7)*y(7);
+    %     dy(8) = -y(8)*y(8)*y(16);
+    %     dy(9) = y(3)*y(3) - y(7)*y(11);
+    %     dy(10) = y(4)*y(4) - y(7)*y(12);
+    %     dy(11) = 2*y(9);
+    %     dy(12) = 2*y(10);
+    %     dy(13) = y(3)*y(3) + y(4)*y(4) - y(7)*y(14);
+    %     dy(14) = 2*y(9) + 2*y(10);
+    %     dy(15) = y(8)*y(13)*y(13) + y(6)*y(3)*y(3) + y(6)*y(4)*y(4) - y(6)*y(7)*y(14);
+    %     dy(16) = -y(8)*y(16)*y(16) + y(8)*y(3)*y(3) + y(8)*y(4)*y(4) - y(8)*y(7)*y(14);    
     
+    results.kepler_div_full.n = length(y0_aux_div_full);
     
-    %% ODE23
     tic;
-    [T_ODE23_AUX_SUB,Y_ODE23_AUX_SUB] = ode23(@(t,y) kepler_aux_sub(t,y),tspan_ode,y0_aux_sub,options_aux_sub);
-    T_ODE23_sub = toc;
+    [T_ODE45_DIV_FULL,Y_ODE45_DIV_FULL] = ode45(@(t,y) kepler_aux_div_full(t,y),tspan_ode,y0_aux_div_full,options_aux_div_full);
+    T_ODE45_div_full = toc;
+
+    results.kepler_div_full.ode45.time = T_ODE45_div_full;
+    results.kepler_div_full.ode45.T = T_ODE45_DIV_FULL;
+    results.kepler_div_full.ode45.Y = Y_ODE45_DIV_FULL;
+    results.kepler_div_full.ode45.norm = cnorm(Y_ANAL,(results.kepler_div_full.ode45.Y(:,1)+e).^2 + results.kepler_div_full.ode45.Y(:,2).^2/(1-e^2));    
     
-    %% ODE15s
+    % ODE23
     tic;
-    [T_ODE15s_AUX_SUB,Y_ODE15s_AUX_SUB] = ode15s(@(t,y) kepler_aux_sub(t,y),tspan_ode,y0_aux_sub,options_aux_sub);
-    T_ODE15s_sub = toc;
+    [T_ODE23_DIV_FULL,Y_ODE23_DIV_FULL] = ode23(@(t,y) kepler_aux_div_full(t,y),tspan_ode,y0_aux_div_full,options_aux_div_full);
+    T_ODE23_div_full = toc;
+    
+    results.kepler_div_full.ode23.time = T_ODE23_div_full;
+    results.kepler_div_full.ode23.T = T_ODE23_DIV_FULL;
+    results.kepler_div_full.ode23.Y = Y_ODE23_DIV_FULL;
+    results.kepler_div_full.ode23.norm = cnorm(Y_ANAL,(results.kepler_div_full.ode23.Y(:,1)+e).^2 + results.kepler_div_full.ode23.Y(:,2).^2/(1-e^2)); 
+    
+    % ODE15s
+    tic;
+    [T_ODE15s_DIV_FULL,Y_ODE15s_DIV_FULL] = ode15s(@(t,y) kepler_aux_div_full(t,y),tspan_ode,y0_aux_div_full,options_aux_div_full);
+    T_ODE15s_div_full = toc;
+    
+    results.kepler_div_full.ode15s.time = T_ODE15s_div_full;
+    results.kepler_div_full.ode15s.T = T_ODE15s_DIV_FULL;
+    results.kepler_div_full.ode15s.Y = Y_ODE15s_DIV_FULL;
+    results.kepler_div_full.ode15s.norm = cnorm(Y_ANAL,(results.kepler_div_full.ode23.Y(:,1)+e).^2 + results.kepler_div_full.ode23.Y(:,2).^2/(1-e^2)); 
+    
+    % ODE15s
+    tic;
+    [T_ODE113_DIV_FULL,Y_ODE113_DIV_FULL] = ode113(@(t,y) kepler_aux_div_full(t,y),tspan_ode,y0_aux_div_full,options_aux_div_full);
+    T_ODE113_div_full = toc;
+    
+    results.kepler_div_full.ode113.time = T_ODE113_div_full;
+    results.kepler_div_full.ode113.T = T_ODE113_DIV_FULL;
+    results.kepler_div_full.ode113.Y = Y_ODE113_DIV_FULL;
+    results.kepler_div_full.ode113.norm = cnorm(Y_ANAL,(results.kepler_div_full.ode113.Y(:,1)+e).^2 + results.kepler_div_full.ode113.Y(:,2).^2/(1-e^2));
     
     if display
         figure
-        plot(T_ODE45_AUX_SUB,Y_ODE45_AUX_SUB(:,2));
+        plot(T_ODE45_DIV_FULL,Y_ODE45_DIV_FULL(:,2));
         grid on;
         xlabel('t');
-        TITLE=sprintf("Kepler problem (e=%f) - ODE45 (AUX SUB)",e);
+        TITLE=sprintf("Kepler problem (e=%f) - ODE45 (DIV FULL)",e);
         title(TITLE)
     end
-    
-
-    
-    %% MTSM - full substitution
+   
+    %MTSM 
     init = y0_aux_div_full;
 %     [FULL_VS_T,FULL_VS_Y,FULL_VS_TIME,FULL_VS_ORD,FULL_VS_ANAL,FULL_GN_v2_T,FULL_GN_v2_Y,FULL_GN_v2_TIME,FULL_GN_v2_ORD,FULL_GN_v2_ANAL] = taylor_fullAux(dt,tspan,init,tol,maxORD,e,display);
-    taylor_fullAux(dt,tspan,init,tol,maxORD,e,display);
+    taylor_div_full(dt,tspan,init,tol,maxORD,e,display);
    
     
     if display
         % Output 
         fprintf('==== SYSTEM OF %d EQUATIONS (BASIC SYSTEM) ====\n',results.kepler.n); 
-        fprintf('ode45: %g   steps: %d\n', results.kepler.ode45.time, length(results.kepler.ode45.T)-1);
+        fprintf('ode45: %g steps: %d ||norm||: %g \n', results.kepler.ode45.time, length(results.kepler.ode45.T)-1, results.kepler.ode45.norm);
         
         fprintf('\n\n==== SYSTEM OF %d EQUATIONS (WITHOUT SQUARE ROOT)====\n',results.kepler_sqrt.n); 
-        fprintf('ode45_sqrt: %g   steps: %d\n',results.kepler_sqrt.ode45.time, length(results.kepler_sqrt.ode45.T)-1);
+        fprintf('ode45: %g steps: %d ||norm||: %g \n',results.kepler_sqrt.ode45.time, length(results.kepler_sqrt.ode45.T)-1,results.kepler_sqrt.ode45.norm);
 
-        fprintf('\n\n==== SYSTEM OF %d EQUATIONS (WITHOUT SQUARE ROOT)====\n',results.kepler_sqrt.n); 
-        fprintf('ode45_div: %g   steps: %d\n',results.kepler_div.ode45.time, length(results.kepler_div.ode45.T)-1);
-
-        fprintf('ode45_div: %g   steps: %d\n',T_ODE45_div, length(T_ODE45_AUX_DIV)-1);
-        fprintf('ode45_sub: %g   steps: %d\n',T_ODE45_sub, length(T_ODE45_AUX_SUB)-1);
-        fprintf('ode23_sub: %g   steps: %d\n',T_ODE23_sub, length(T_ODE23_AUX_SUB)-1);
-        fprintf('ode15s_sub: %g   steps: %d\n\n',T_ODE15s_sub, length(T_ODE15s_AUX_SUB)-1);
-        fprintf('FULL SUB_Taylor GNPV: %g   steps: %d\n',FULL_GN_v2_TIME, length(FULL_GN_v2_T)-1);
-        fprintf('FULL SUB_Taylor VS: %g   steps: %d\n',FULL_VS_TIME, length(FULL_VS_T)-1);
-        fprintf('DIV_Taylor GNPV v2: %g   steps: %d\n',DIV_GN_v2_TIME, length(DIV_GN_v2_T)-1);
-        fprintf('DIV_Taylor VS: %g   steps: %d\n',DIV_VS_TIME, length(DIV_VS_T)-1);
-
-        % analytical solution
-        fprintf('\n==== ANALYTICAL SOLUTION ====\n')
-        Y_RES = 1;
-        ANAL_ODE45 = (Y_ODE45(:,1)+e).^2 + Y_ODE45(:,2).^2/(1-e^2);
-        ANAL_ODE45_AUX_SQRT = (Y_ODE45_AUX_SQRT(:,1)+e).^2 + Y_ODE45_AUX_SQRT(:,2).^2/(1-e^2);
-        ANAL_ODE45_AUX_DIV = (Y_ODE45_AUX_DIV(:,1)+e).^2 + Y_ODE45_AUX_DIV(:,2).^2/(1-e^2);
-        ANAL_ODE45_AUX_SUB = (Y_ODE45_AUX_SUB(:,1)+e).^2 + Y_ODE45_AUX_SUB(:,2).^2/(1-e^2);  
-        ANAL_ODE23_AUX_SUB = (Y_ODE23_AUX_SUB(:,1)+e).^2 + Y_ODE23_AUX_SUB(:,2).^2/(1-e^2);
-        ANAL_ODE15s_AUX_SUB = (Y_ODE15s_AUX_SUB(:,1)+e).^2 + Y_ODE15s_AUX_SUB(:,2).^2/(1-e^2);
-
+        fprintf('\n\n==== SYSTEM OF %d EQUATIONS (WITHOUT SQUARE ROOT AND DIVISION)====\n',results.kepler_div.n); 
+        fprintf('ode45:  %g  steps: %d  ||norm||: %g \n',results.kepler_div.ode45.time, length(results.kepler_div.ode45.T)-1,results.kepler_div.ode45.norm);
+        fprintf('ode23:  %g  steps: %d  ||norm||: %g \n',results.kepler_div.ode23.time, length(results.kepler_div.ode23.T)-1,results.kepler_div.ode23.norm);
+        fprintf('ode15s: %g  steps: %d  ||norm||: %g \n',results.kepler_div.ode15s.time, length(results.kepler_div.ode15s.T)-1,results.kepler_div.ode15s.norm);
+        fprintf('ode113: %g  steps: %d  ||norm||: %g \n',results.kepler_div.ode113.time, length(results.kepler_div.ode113.T)-1,results.kepler_div.ode113.norm);
+        fprintf('mtsm_basic\ntime: %g  steps: %d ORD: %g ||norm||: %g \n',results.kepler_div.mtsm_basic.time, length(results.kepler_div.mtsm_basic.T)-1,mean(results.kepler_div.mtsm_basic.ORD),results.kepler_div.mtsm_basic.norm);       
+        fprintf('ode45/mtsm_basic: %g\n',results.kepler_div.ode45.time/results.kepler_div.mtsm_basic.time);
+        fprintf('ode23/mtsm_basic: %g\n',results.kepler_div.ode23.time/results.kepler_div.mtsm_basic.time);
+        fprintf('ode15s/mtsm_basic: %g\n',results.kepler_div.ode15s.time/results.kepler_div.mtsm_basic.time);
+        fprintf('ode113/mtsm_basic: %g\n',results.kepler_div.ode113.time/results.kepler_div.mtsm_basic.time);
         
-        fprintf('||1-ANAL_ODE45||: %g \n',cnorm(Y_RES,ANAL_ODE45));
-        fprintf('||1-ANAL_ODE45_AUX_SQRT||: %g \n',cnorm(Y_RES,ANAL_ODE45_AUX_SQRT));
-        fprintf('||1-ANAL_ODE45_AUX_DIV||: %g \n',cnorm(Y_RES,ANAL_ODE45_AUX_DIV));
-        fprintf('||1-ANAL_ODE45_AUX_SUB||: %g \n',cnorm(Y_RES,ANAL_ODE45_AUX_SUB));
-        fprintf('||1-ANAL_ODE23_AUX_SUB||: %g \n',cnorm(Y_RES,ANAL_ODE23_AUX_SUB));
-        fprintf('||1-ANAL_ODE15s_AUX_SUB||: %g \n\n',cnorm(Y_RES,ANAL_ODE15s_AUX_SUB));
-        fprintf('||1-FULL_ANAL_TAYLOR_GN_v2||: %g \n',cnorm(Y_RES,FULL_GN_v2_ANAL));
-        fprintf('||1-FULL_ANAL_TAYLOR_VS||: %g \n',cnorm(Y_RES,FULL_VS_ANAL));
-        fprintf('||1-DIV_ANAL_TAYLOR_GN_v2||: %g \n',cnorm(Y_RES,DIV_GN_v2_ANAL));
-        fprintf('||1-DIV_ANAL_TAYLOR_VS||: %g \n',cnorm(Y_RES,DIV_VS_ANAL));        
+        fprintf('mtsm_v2\ntime: %g  steps: %d ORD: %g ||norm||: %g \n',results.kepler_div.mtsm_v2.time, length(results.kepler_div.mtsm_v2.T)-1,mean(results.kepler_div.mtsm_v2.ORD),results.kepler_div.mtsm_v2.norm);       
+        fprintf('ode45/mtsm_v2: %g\n',results.kepler_div.ode45.time/results.kepler_div.mtsm_v2.time);
+        fprintf('ode23/mtsm_v2: %g\n',results.kepler_div.ode23.time/results.kepler_div.mtsm_v2.time);
+        fprintf('ode15s/mtsm_v2: %g\n',results.kepler_div.ode15s.time/results.kepler_div.mtsm_v2.time);
+        fprintf('ode113/mtsm_v2: %g\n',results.kepler_div.ode113.time/results.kepler_div.mtsm_v2.time);
+        
+        
+        fprintf('\n\n==== SYSTEM OF %d EQUATIONS (WITHOUT SQUARE ROOT AND DIVISION, FULLY SUBSTITUTED)====\n',results.kepler_div_full.n); 
+        fprintf('ode45:  %g  steps: %d  ||norm||: %g \n',results.kepler_div_full.ode45.time, length(results.kepler_div_full.ode45.T)-1,results.kepler_div_full.ode45.norm);
+        fprintf('ode23:  %g  steps: %d  ||norm||: %g \n',results.kepler_div_full.ode23.time, length(results.kepler_div_full.ode23.T)-1,results.kepler_div_full.ode23.norm);
+        fprintf('ode15s: %g  steps: %d  ||norm||: %g \n',results.kepler_div_full.ode15s.time, length(results.kepler_div_full.ode15s.T)-1,results.kepler_div_full.ode15s.norm);
+        fprintf('ode113: %g  steps: %d  ||norm||: %g \n',results.kepler_div_full.ode113.time, length(results.kepler_div_full.ode113.T)-1,results.kepler_div_full.ode113.norm);
+        fprintf('mtsm_basic\ntime: %g  steps: %d ORD: %g ||norm||: %g \n',results.kepler_div_full.mtsm_basic.time, length(results.kepler_div_full.mtsm_basic.T)-1,mean(results.kepler_div_full.mtsm_basic.ORD),results.kepler_div_full.mtsm_basic.norm);       
+        fprintf('ode45/mtsm_basic: %g\n',results.kepler_div_full.ode45.time/results.kepler_div_full.mtsm_basic.time);
+        fprintf('ode23/mtsm_basic: %g\n',results.kepler_div_full.ode23.time/results.kepler_div_full.mtsm_basic.time);
+        fprintf('ode15s/mtsm_basic: %g\n',results.kepler_div_full.ode15s.time/results.kepler_div_full.mtsm_basic.time);
+        fprintf('ode113/mtsm_basic: %g\n',results.kepler_div_full.ode113.time/results.kepler_div_full.mtsm_basic.time);
+        
+        fprintf('mtsm_v2\ntime: %g  steps: %d ORD: %g ||norm||: %g \n',results.kepler_div.mtsm_v2.time, length(results.kepler_div.mtsm_v2.T)-1,mean(results.kepler_div.mtsm_v2.ORD),results.kepler_div.mtsm_v2.norm);       
+        fprintf('ode45/mtsm_v2: %g\n',results.kepler_div_full.ode45.time/results.kepler_div_full.mtsm_v2.time);
+        fprintf('ode23/mtsm_v2: %g\n',results.kepler_div_full.ode23.time/results.kepler_div_full.mtsm_v2.time);
+        fprintf('ode15s/mtsm_v2: %g\n',results.kepler_div_full.ode15s.time/results.kepler_div_full.mtsm_v2.time);
+        fprintf('ode113/mtsm_v2: %g\n',results.kepler_div_full.ode113.time/results.kepler_div_full.mtsm_v2.time);
     end
 end
 
@@ -319,7 +396,7 @@ function taylor_divAux(dt,tspan,init,tol,maxORD,e,display)
     results.kepler_div.mtsm_basic.T = VS_T;
     results.kepler_div.mtsm_basic.Y = VS_Y;
     results.kepler_div.mtsm_basic.ORD = VS_ORD;
-    results.kepler_div.mtsm_basic.analytical = (VS_Y(1,:)+e).^2 + VS_Y(2,:).^2/(1-e^2);
+    results.kepler_div.mtsm_basic.norm = cnorm(1,(results.kepler_div.mtsm_basic.Y(1,:)+e).^2 + results.kepler_div.mtsm_basic.Y(2,:).^2/(1-e^2));
     
     % GNPV implemetation
     tic
@@ -330,7 +407,7 @@ function taylor_divAux(dt,tspan,init,tol,maxORD,e,display)
     results.kepler_div.mtsm_v2.T = GN_v2_T;
     results.kepler_div.mtsm_v2.Y = GN_v2_Y;
     results.kepler_div.mtsm_v2.ORD = GN_v2_ORD;
-    results.kepler_div.mtsm_v2.analytical = (GN_v2_Y(1,:)+e).^2 + GN_v2_Y(2,:).^2/(1-e^2);
+    results.kepler_div.mtsm_v2.norm = cnorm(1,(GN_v2_Y(1,:)+e).^2 + GN_v2_Y(2,:).^2/(1-e^2));
  
     if display
         figure
@@ -357,7 +434,7 @@ function taylor_divAux(dt,tspan,init,tol,maxORD,e,display)
 end
 
 %function [VS_T,VS_Y,VS_TIME,VS_ORD,VS_ANAL,GN_T,GN_Y,GN_TIME,GN_ORD,GN_ANAL] = taylor_fullAux(dt,tspan,init,tol,maxORD,e,display)
-function taylor_fullAux(dt,tspan,init,tol,maxORD,e,display)
+function taylor_div_full(dt,tspan,init,tol,maxORD,e,display)
     global results
     % System of ODEs
     %     dy = zeros(16,1);
@@ -461,7 +538,7 @@ function taylor_fullAux(dt,tspan,init,tol,maxORD,e,display)
     results.kepler_div_full.mtsm_basic.T = VS_T;
     results.kepler_div_full.mtsm_basic.Y = VS_Y;
     results.kepler_div_full.mtsm_basic.ORD = VS_ORD;
-    results.kepler_div_full.mtsm_basic.analytical = (VS_Y(1,:)+e).^2 + VS_Y(2,:).^2/(1-e^2);
+    results.kepler_div_full.mtsm_basic.norm = cnorm(1,(results.kepler_div_full.mtsm_basic.Y(1,:)+e).^2 + results.kepler_div_full.mtsm_basic.Y(2,:).^2/(1-e^2));
     
     % GNPV implemetation
     tic
@@ -472,7 +549,7 @@ function taylor_fullAux(dt,tspan,init,tol,maxORD,e,display)
     results.kepler_div_full.mtsm_v2.T = GN_T;
     results.kepler_div_full.mtsm_v2.Y = GN_Y;
     results.kepler_div_full.mtsm_v2.ORD = GN_ORD;
-    results.kepler_div_full.mtsm_v2.analytical = (GN_Y(1,:)+e).^2 + GN_Y(2,:).^2/(1-e^2);
+    results.kepler_div_full.mtsm_v2.norm = cnorm(1,(results.kepler_div_full.mtsm_v2.Y(1,:)+e).^2 + results.kepler_div_full.mtsm_v2.Y(2,:).^2/(1-e^2));
     
     if display
         figure

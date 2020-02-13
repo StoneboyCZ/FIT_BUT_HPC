@@ -1,4 +1,4 @@
-function dy = kepler_aux_sub(~,y)
+function dy = kepler_aux_div_full(~,y)
     dy = zeros(16,1);
     dy(1) = y(3);
     dy(2) = y(4);
