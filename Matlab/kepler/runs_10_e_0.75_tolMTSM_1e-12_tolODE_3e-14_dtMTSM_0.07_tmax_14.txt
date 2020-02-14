@@ -1,0 +1,41 @@
+runs: 10
+ e: 0.75
+ tol_MTSM: 1e-12
+ tol_ODE: 3e-14
+ dt_MTSM: 0.07
+ tmax: 14
+=========================================
+BASIC SYSTEM (4 equations): ode45 0.0410955
+SYSTEM WITHOUT SQUARE ROOT (6 equations): ode45 0.0452347
+SYSTEM WITHOUT DIVISION (8 equations)
+======
+ode45: 0.0841888
+ode23: 4.406
+ode15s: 0.913146
+ode113: 0.0284749
+mtsm_basic: 4.35847
+ode45/mtsm_basic: 0.0193161
+ode23/mtsm_basic: 1.01091
+ode15s/mtsm_basic: 0.209511
+ode113/mtsm_basic: 0.00653325
+mtsm_v2: 0.146386
+ode45/mtsm_v2: 0.575115
+ode23/mtsm_v2: 30.0985
+ode15s/mtsm_v2: 6.23793
+ode113/mtsm_v2: 0.19452
+COMPLETELY SUBSTITUTED SYSTEM (16 equations)
+======
+ode45: 0.0923832
+ode23: 4.68112
+ode15s: 0.970096
+ode113: 0.031899
+mtsm_basic: 0.0732065
+ode45/mtsm_basic: 1.26195
+ode23/mtsm_basic: 63.9441
+ode15s/mtsm_basic: 13.2515
+ode113/mtsm_basic: 0.43574
+mtsm_v2: 0.0626788
+ode45/mtsm_v2: 1.47391
+ode23/mtsm_v2: 74.6843
+ode15s/mtsm_v2: 15.4773
+ode113/mtsm_v2: 0.508928

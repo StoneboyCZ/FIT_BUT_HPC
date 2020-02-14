@@ -1,13 +1,12 @@
-function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL_GN_v2_TIME, DIV_GN_v2_TIME, DIV_VS_TIME] =  simulate(display,tol,tol_ode,tmax,dt,dt_ode,e)
+% function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL_GN_v2_TIME, DIV_GN_v2_TIME, DIV_VS_TIME] =  simulate(display,tol,tol_ode,tmax,dt,e)
+function simulate(display,tol,tol_ode,tmax,dt,e) 
+    % simulate(true, 1e-9,1e-12,4*pi,4*pi/180,0.75)
     close all;
     
     global results
     
     Y_ANAL = 1;
-    
     tspan = [0, tmax];
-    %tspan_ode = 0:dt_ode:tmax;
-    tspan_ode = tspan;
     
     %% MTSM nonlinear solver
     maxORD = 60;
@@ -97,7 +96,7 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
     
     % ODE45 
     tic;
-    [T_ODE45,Y_ODE45] = ode45(@(t,y) kepler(t,y),tspan_ode,y0,options);
+    [T_ODE45,Y_ODE45] = ode45(@(t,y) kepler(t,y),tspan,y0,options);
     T_ODE45_basic = toc;
 
     
@@ -125,7 +124,7 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
     %     dy(6) = (y(1)*y(3)+y(2)*y(4))/y(6);
     
     tic;
-    [T_ODE45_AUX_SQRT,Y_ODE45_AUX_SQRT] = ode45(@(t,y) kepler_aux_sqrt(t,y),tspan_ode,y0_aux_sqrt,options_aux_sqrt);
+    [T_ODE45_AUX_SQRT,Y_ODE45_AUX_SQRT] = ode45(@(t,y) kepler_aux_sqrt(t,y),tspan,y0_aux_sqrt,options_aux_sqrt);
     T_ODE45_sqrt = toc;
 
     results.kepler_sqrt.n = length(y0_aux_sqrt);
@@ -156,7 +155,7 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
     results.kepler_div.n = length(y0_aux_div);
     
     tic;
-    [T_ODE45_AUX_DIV,Y_ODE45_AUX_DIV] = ode45(@(t,y) kepler_aux_div(t,y),tspan_ode,y0_aux_div,options_aux_div);
+    [T_ODE45_AUX_DIV,Y_ODE45_AUX_DIV] = ode45(@(t,y) kepler_aux_div(t,y),tspan,y0_aux_div,options_aux_div);
     T_ODE45_div = toc;
 
     results.kepler_div.ode45.time = T_ODE45_div;
@@ -165,7 +164,7 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
     results.kepler_div.ode45.norm = cnorm(Y_ANAL,(results.kepler_div.ode45.Y(:,1)+e).^2 + results.kepler_div.ode45.Y(:,2).^2/(1-e^2));
     
     tic;
-    [T_ODE23_AUX_DIV,Y_ODE23_AUX_DIV] = ode23(@(t,y) kepler_aux_div(t,y),tspan_ode,y0_aux_div,options_aux_div);
+    [T_ODE23_AUX_DIV,Y_ODE23_AUX_DIV] = ode23(@(t,y) kepler_aux_div(t,y),tspan,y0_aux_div,options_aux_div);
     T_ODE23_div = toc;
 
     results.kepler_div.ode23.time = T_ODE23_div;
@@ -174,7 +173,7 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
     results.kepler_div.ode23.norm = cnorm(Y_ANAL,(results.kepler_div.ode23.Y(:,1)+e).^2 + results.kepler_div.ode23.Y(:,2).^2/(1-e^2));
     
     tic;
-    [T_ODE15s_AUX_DIV,Y_ODE15s_AUX_DIV] = ode15s(@(t,y) kepler_aux_div(t,y),tspan_ode,y0_aux_div,options_aux_div);
+    [T_ODE15s_AUX_DIV,Y_ODE15s_AUX_DIV] = ode15s(@(t,y) kepler_aux_div(t,y),tspan,y0_aux_div,options_aux_div);
     T_ODE15s_div = toc;
 
     results.kepler_div.ode15s.time = T_ODE15s_div;
@@ -183,7 +182,7 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
     results.kepler_div.ode15s.norm = cnorm(Y_ANAL,(results.kepler_div.ode15s.Y(:,1)+e).^2 + results.kepler_div.ode15s.Y(:,2).^2/(1-e^2));
     
     tic;
-    [T_ODE113_AUX_DIV,Y_ODE113_AUX_DIV] = ode113(@(t,y) kepler_aux_div(t,y),tspan_ode,y0_aux_div,options_aux_div);
+    [T_ODE113_AUX_DIV,Y_ODE113_AUX_DIV] = ode113(@(t,y) kepler_aux_div(t,y),tspan,y0_aux_div,options_aux_div);
     T_ODE113_div = toc;
 
     results.kepler_div.ode113.time = T_ODE113_div;
@@ -202,7 +201,7 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
     
     init = y0_aux_div;
 %     [DIV_VS_T,DIV_VS_Y,DIV_VS_TIME,DIV_VS_ORD,DIV_VS_ANAL,DIV_GN_v1_T,DIV_GN_v1_Y,DIV_GN_v1_TIME,DIV_GN_v1_ORD,DIV_GN_v1_ANAL,DIV_GN_v2_T,DIV_GN_v2_Y,DIV_GN_v2_TIME,DIV_GN_v2_ORD,DIV_GN_v2_ANAL] = taylor_divAux(dt,tspan,init,tol,maxORD,e,display);
-    taylor_divAux(dt,tspan,init,tol,maxORD,e,display);
+    taylor_div(dt,tspan,init,tol,maxORD,e,display);
     
     %% Full substitution
     %     dy(1) = y(3);
@@ -225,7 +224,7 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
     results.kepler_div_full.n = length(y0_aux_div_full);
     
     tic;
-    [T_ODE45_DIV_FULL,Y_ODE45_DIV_FULL] = ode45(@(t,y) kepler_aux_div_full(t,y),tspan_ode,y0_aux_div_full,options_aux_div_full);
+    [T_ODE45_DIV_FULL,Y_ODE45_DIV_FULL] = ode45(@(t,y) kepler_aux_div_full(t,y),tspan,y0_aux_div_full,options_aux_div_full);
     T_ODE45_div_full = toc;
 
     results.kepler_div_full.ode45.time = T_ODE45_div_full;
@@ -235,7 +234,7 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
     
     % ODE23
     tic;
-    [T_ODE23_DIV_FULL,Y_ODE23_DIV_FULL] = ode23(@(t,y) kepler_aux_div_full(t,y),tspan_ode,y0_aux_div_full,options_aux_div_full);
+    [T_ODE23_DIV_FULL,Y_ODE23_DIV_FULL] = ode23(@(t,y) kepler_aux_div_full(t,y),tspan,y0_aux_div_full,options_aux_div_full);
     T_ODE23_div_full = toc;
     
     results.kepler_div_full.ode23.time = T_ODE23_div_full;
@@ -245,7 +244,7 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
     
     % ODE15s
     tic;
-    [T_ODE15s_DIV_FULL,Y_ODE15s_DIV_FULL] = ode15s(@(t,y) kepler_aux_div_full(t,y),tspan_ode,y0_aux_div_full,options_aux_div_full);
+    [T_ODE15s_DIV_FULL,Y_ODE15s_DIV_FULL] = ode15s(@(t,y) kepler_aux_div_full(t,y),tspan,y0_aux_div_full,options_aux_div_full);
     T_ODE15s_div_full = toc;
     
     results.kepler_div_full.ode15s.time = T_ODE15s_div_full;
@@ -255,7 +254,7 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
     
     % ODE15s
     tic;
-    [T_ODE113_DIV_FULL,Y_ODE113_DIV_FULL] = ode113(@(t,y) kepler_aux_div_full(t,y),tspan_ode,y0_aux_div_full,options_aux_div_full);
+    [T_ODE113_DIV_FULL,Y_ODE113_DIV_FULL] = ode113(@(t,y) kepler_aux_div_full(t,y),tspan,y0_aux_div_full,options_aux_div_full);
     T_ODE113_div_full = toc;
     
     results.kepler_div_full.ode113.time = T_ODE113_div_full;
@@ -323,7 +322,7 @@ function [T_ODE45_sub, T_ODE45_div,T_ODE45_basic,T_ODE23_sub, T_ODE15s_sub, FULL
     end
 end
 
-function taylor_divAux(dt,tspan,init,tol,maxORD,e,display)
+function taylor_div(dt,tspan,init,tol,maxORD,e,display)
     global results
 % function [VS_T,VS_Y,VS_TIME,VS_ORD,VS_ANAL,GN_v1_T,GN_v1_Y,GN_v1_TIME,GN_v1_ORD,GN_v1_ANAL,GN_v2_T,GN_v2_Y,GN_v2_TIME,GN_v2_ORD,GN_v2_ANAL] = taylor_divAux(dt,tspan,init,tol,maxORD,e,display)
 %     dy(1) = y(3);
