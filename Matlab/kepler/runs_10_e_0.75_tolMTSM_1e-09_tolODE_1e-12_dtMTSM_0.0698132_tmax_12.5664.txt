@@ -5,37 +5,53 @@ runs: 10
  dt_MTSM: 0.0698132
  tmax: 12.5664
 =========================================
-BASIC SYSTEM (4 equations): ode45 0.0172505
-SYSTEM WITHOUT SQUARE ROOT (6 equations): ode45 0.0187189
+BASIC SYSTEM (4 equations): ode45 0.0119164
+SYSTEM WITHOUT SQUARE ROOT (6 equations): ode45 0.0129818
 SYSTEM WITHOUT DIVISION (8 equations)
 ======
-ode45: 0.0340121
-ode23: 1.09163
-ode15s: 0.343908
-ode113: 0.0176484
-mtsm_basic: 0.984283
-ode45/mtsm_basic: 0.0345552
-ode23/mtsm_basic: 1.10906
-ode15s/mtsm_basic: 0.349399
-ode113/mtsm_basic: 0.0179302
-mtsm_v2: 0.0926153
-ode45/mtsm_v2: 0.367241
-ode23/mtsm_v2: 11.7867
-ode15s/mtsm_v2: 3.71329
-ode113/mtsm_v2: 0.190556
+ode45: 0.0234041
+ode23: 0.860601
+ode15s: 0.230609
+ode113: 0.013091
+mtsm_basic: 0.742394
+ode45/mtsm_basic: 0.0315252
+ode23/mtsm_basic: 1.15922
+ode15s/mtsm_basic: 0.310628
+ode113/mtsm_basic: 0.0176335
+mtsm_v2: 0.0654104
+ode45/mtsm_v2: 0.357805
+ode23/mtsm_v2: 13.157
+ode15s/mtsm_v2: 3.52557
+ode113/mtsm_v2: 0.200137
+SYSTEM WITHOUT DIVISION, NOT FULLY SUBSTITUTED (8 equations)
+======
+ode45: 0.0275285
+ode23: 0.897861
+ode15s: 0.25254
+ode113: 0.0135643
+mtsm_basic: 0.0770529
+ode45/mtsm_basic: 0.357268
+ode23/mtsm_basic: 11.6525
+ode15s/mtsm_basic: 3.27749
+ode113/mtsm_basic: 0.176039
+mtsm_v2: 0.038276
+ode45/mtsm_v2: 0.719211
+ode23/mtsm_v2: 23.4576
+ode15s/mtsm_v2: 6.59788
+ode113/mtsm_v2: 0.354383
 COMPLETELY SUBSTITUTED SYSTEM (16 equations)
 ======
-ode45: 0.0385038
-ode23: 1.16346
-ode15s: 0.355658
-ode113: 0.0183625
-mtsm_basic: 0.0399193
-ode45/mtsm_basic: 0.964541
-ode23/mtsm_basic: 29.1453
-ode15s/mtsm_basic: 8.90942
-ode113/mtsm_basic: 0.459991
-mtsm_v2: 0.0414845
-ode45/mtsm_v2: 0.928151
-ode23/mtsm_v2: 28.0458
-ode15s/mtsm_v2: 8.57329
-ode113/mtsm_v2: 0.442637
+ode45: 0.0279095
+ode23: 0.91232
+ode15s: 0.24158
+ode113: 0.013778
+mtsm_basic: 0.0281958
+ode45/mtsm_basic: 0.989846
+ode23/mtsm_basic: 32.3566
+ode15s/mtsm_basic: 8.56796
+ode113/mtsm_basic: 0.488654
+mtsm_v2: 0.0307488
+ode45/mtsm_v2: 0.907661
+ode23/mtsm_v2: 29.6701
+ode15s/mtsm_v2: 7.85658
+ode113/mtsm_v2: 0.448083

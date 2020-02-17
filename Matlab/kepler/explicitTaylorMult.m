@@ -92,9 +92,13 @@ ls_tol = 10^-10;
 i2=ij(:,1);
 j2=ij(:,2);
 
-i3=ijk(:,1);
-j3=ijk(:,2);
-k3=ijk(:,3);
+if isempty(ijk)
+    A3y=zeros(ne,1);
+else
+    i3=ijk(:,1);
+    j3=ijk(:,2);
+    k3=ijk(:,3);
+end
 
 if isempty(ijkl)
     A4y=zeros(ne,1);
@@ -136,7 +140,9 @@ while t(i-1)+ls_tol<tspan(1,2)
 
     % multiplications terms
     A2y=A2*(DY(ij(:,1),1).*DY(ij(:,2),1));
+    if ~isempty(ijk)
     A3y=A3*(DY(ijk(:,1),1).*(DY(ijk(:,2),1).*DY(ijk(:,3),1)));
+    end
     if ~isempty(ijkl)
     A4y=A4*(DY(ijkl(:,1),1).*DY(ijkl(:,2),1).*DY(ijkl(:,3),1).*DY(ijkl(:,4),1));
     end
@@ -159,7 +165,9 @@ while t(i-1)+ls_tol<tspan(1,2)
         Ay=A*DY(:,k); % opraveno Vasek 23.10.2017
         
         A2y=A2*sum(DY(i2,ind.DY_ij{1,k-1}).*DY(j2,ind.DY_ij{2,k-1}),2);
-        A3y=A3*sum(DY(i3,ind.DY_ijk{1,k-1}).*DY(j3,ind.DY_ijk{2,k-1}).*DY(k3,ind.DY_ijk{3,k-1}),2);
+        if ~isempty(ijk)
+            A3y=A3*sum(DY(i3,ind.DY_ijk{1,k-1}).*DY(j3,ind.DY_ijk{2,k-1}).*DY(k3,ind.DY_ijk{3,k-1}),2);
+        end
         if ~isempty(ijkl)
             A4y=A4*sum(DY(i4,ind.DY_ijkl{1,k-1}).*DY(j4,ind.DY_ijkl{2,k-1}).*DY(k4,ind.DY_ijkl{3,k-1}).*DY(l4,ind.DY_ijkl{4,k-1}),2);
         end

@@ -83,8 +83,7 @@ function simulate(display,tol,tol_ode,tmax,dt,e)
     % type: kepler, kepler_aux_sqrt,kepler_aux_div, kepler_aux_div_brackets, kepler_aux_div_full 
     
         
-    %% Matlab solvers, basic systems
-    % basic system
+    %% basic systems
     %     r = sqrt(y(1)*y(1) + y(2)*y(2));
     %     r3 = r*r*r;
     % 
@@ -203,6 +202,69 @@ function simulate(display,tol,tol_ode,tmax,dt,e)
 %     [DIV_VS_T,DIV_VS_Y,DIV_VS_TIME,DIV_VS_ORD,DIV_VS_ANAL,DIV_GN_v1_T,DIV_GN_v1_Y,DIV_GN_v1_TIME,DIV_GN_v1_ORD,DIV_GN_v1_ANAL,DIV_GN_v2_T,DIV_GN_v2_Y,DIV_GN_v2_TIME,DIV_GN_v2_ORD,DIV_GN_v2_ANAL] = taylor_divAux(dt,tspan,init,tol,maxORD,e,display);
     taylor_div(dt,tspan,init,tol,maxORD,e,display);
     
+    %% Division with brackets (12 equations)
+    %     dy(1) = y(3);
+    %     dy(2) = y(4);
+    %     dy(3) = -y(1)*y(7); 
+    %     dy(4) = -y(2)*y(7); 
+    %     dy(5) = 3*y(6)*(y(9)+y(10));
+    %     dy(6) = y(8)*(y(9)+y(10));
+    %     dy(7) = -3*y(6)*y(7)*y(7)*(y(9)+y(10));
+    %     dy(8) = (-y(8))*(-y(8))*(-y(8))*(y(9)+y(10));
+    %     dy(9) = y(3)*y(3) - y(7)*y(11);
+    %     dy(10) = y(4)*y(4) -y(7)*y(12);
+    %     dy(11) = 2*y(9);
+    %     dy(12) = 2*y(10);
+    
+    results.kepler_div_brackets.n = length(y0_aux_div_brackets);
+    
+    tic;
+    [T_ODE45_DIV_BRACKETS,Y_ODE45_DIV_BRACKETS] = ode45(@(t,y) kepler_aux_div_brackets(t,y),tspan,y0_aux_div_brackets,options_aux_div_brackets);
+    T_ODE45_div_brakets = toc;
+
+    results.kepler_div_brackets.ode45.time = T_ODE45_div_brakets;
+    results.kepler_div_brackets.ode45.T = T_ODE45_DIV_BRACKETS;
+    results.kepler_div_brackets.ode45.Y = Y_ODE45_DIV_BRACKETS;
+    results.kepler_div_brackets.ode45.norm = cnorm(Y_ANAL,(results.kepler_div_brackets.ode45.Y(:,1)+e).^2 + results.kepler_div_brackets.ode45.Y(:,2).^2/(1-e^2));
+    
+    tic;
+    [T_ODE23_AUX_DIV_BRACKETS,Y_ODE23_AUX_DIV_BRACKETS] = ode23(@(t,y) kepler_aux_div_brackets(t,y),tspan,y0_aux_div_brackets,options_aux_div_brackets);
+    T_ODE23_div_brackets = toc;
+
+    results.kepler_div_brackets.ode23.time = T_ODE23_div_brackets;
+    results.kepler_div_brackets.ode23.T = T_ODE23_AUX_DIV_BRACKETS;
+    results.kepler_div_brackets.ode23.Y = Y_ODE23_AUX_DIV_BRACKETS;
+    results.kepler_div_brackets.ode23.norm = cnorm(Y_ANAL,(results.kepler_div_brackets.ode23.Y(:,1)+e).^2 + results.kepler_div_brackets.ode23.Y(:,2).^2/(1-e^2));
+    
+    tic;
+    [T_ODE15s_AUX_DIV_BRACKETS,Y_ODE15s_AUX_DIV_BRACKETS] = ode15s(@(t,y) kepler_aux_div_brackets(t,y),tspan,y0_aux_div_brackets,options_aux_div_brackets);
+    T_ODE15s_div_brackets = toc;
+
+    results.kepler_div_brackets.ode15s.time = T_ODE15s_div_brackets;
+    results.kepler_div_brackets.ode15s.T = T_ODE15s_AUX_DIV_BRACKETS;
+    results.kepler_div_brackets.ode15s.Y = Y_ODE15s_AUX_DIV_BRACKETS;
+    results.kepler_div_brackets.ode15s.norm = cnorm(Y_ANAL,(results.kepler_div_brackets.ode15s.Y(:,1)+e).^2 + results.kepler_div_brackets.ode15s.Y(:,2).^2/(1-e^2));
+    
+    tic;
+    [T_ODE113_AUX_DIV_BRACKETS,Y_ODE113_AUX_DIV_BRACKETS] = ode113(@(t,y) kepler_aux_div_brackets(t,y),tspan,y0_aux_div_brackets,options_aux_div_brackets);
+    T_ODE113_div_brackets = toc;
+
+    results.kepler_div_brackets.ode113.time = T_ODE113_div_brackets;
+    results.kepler_div_brackets.ode113.T = T_ODE113_AUX_DIV_BRACKETS;
+    results.kepler_div_brackets.ode113.Y = Y_ODE113_AUX_DIV_BRACKETS;
+    results.kepler_div_brackets.ode113.norm = cnorm(Y_ANAL,(results.kepler_div_brackets.ode113.Y(:,1)+e).^2 + results.kepler_div_brackets.ode113.Y(:,2).^2/(1-e^2)); 
+    
+    if display
+        figure
+        plot(T_ODE45_DIV_BRACKETS,Y_ODE45_DIV_BRACKETS(:,2));
+        grid on;
+        xlabel('t');
+        TITLE=sprintf("Kepler problem (e=%f) - ODE45 (DIV BRACKETS)",e);
+        title(TITLE)
+    end
+    
+    init = y0_aux_div_brackets;
+    taylor_div_brackets(dt,tspan,init,tol,maxORD,e,display);
     %% Full substitution
     %     dy(1) = y(3);
     %     dy(2) = y(4);
@@ -302,6 +364,24 @@ function simulate(display,tol,tol_ode,tmax,dt,e)
         fprintf('ode15s/mtsm_v2: %g\n',results.kepler_div.ode15s.time/results.kepler_div.mtsm_v2.time);
         fprintf('ode113/mtsm_v2: %g\n',results.kepler_div.ode113.time/results.kepler_div.mtsm_v2.time);
         
+        fprintf('\n\n==== SYSTEM OF %d EQUATIONS (WITHOUT SQUARE ROOT AND DIVISION, NOT FULLY SUBSTITUTED)====\n',results.kepler_div_brackets.n); 
+        fprintf('ode45:  %g  steps: %d  ||norm||: %g \n',results.kepler_div_brackets.ode45.time, length(results.kepler_div_brackets.ode45.T)-1,results.kepler_div_brackets.ode45.norm);
+        fprintf('ode23:  %g  steps: %d  ||norm||: %g \n',results.kepler_div_brackets.ode23.time, length(results.kepler_div_brackets.ode23.T)-1,results.kepler_div_brackets.ode23.norm);
+        fprintf('ode15s: %g  steps: %d  ||norm||: %g \n',results.kepler_div_brackets.ode15s.time, length(results.kepler_div_brackets.ode15s.T)-1,results.kepler_div_brackets.ode15s.norm);
+        fprintf('ode113: %g  steps: %d  ||norm||: %g \n',results.kepler_div_brackets.ode113.time, length(results.kepler_div_brackets.ode113.T)-1,results.kepler_div_brackets.ode113.norm);
+        fprintf('mtsm_basic\ntime: %g  steps: %d ORD: %g ||norm||: %g \n',results.kepler_div_brackets.mtsm_basic.time, length(results.kepler_div_brackets.mtsm_basic.T)-1,mean(results.kepler_div_brackets.mtsm_basic.ORD),results.kepler_div_brackets.mtsm_basic.norm);       
+        fprintf('ode45/mtsm_basic: %g\n',results.kepler_div_brackets.ode45.time/results.kepler_div_brackets.mtsm_basic.time);
+        fprintf('ode23/mtsm_basic: %g\n',results.kepler_div_brackets.ode23.time/results.kepler_div_brackets.mtsm_basic.time);
+        fprintf('ode15s/mtsm_basic: %g\n',results.kepler_div_brackets.ode15s.time/results.kepler_div_brackets.mtsm_basic.time);
+        fprintf('ode113/mtsm_basic: %g\n',results.kepler_div_brackets.ode113.time/results.kepler_div_brackets.mtsm_basic.time);
+        
+        fprintf('mtsm_v2\ntime: %g  steps: %d ORD: %g ||norm||: %g \n',results.kepler_div_brackets.mtsm_v2.time, length(results.kepler_div_brackets.mtsm_v2.T)-1,mean(results.kepler_div_brackets.mtsm_v2.ORD),results.kepler_div_brackets.mtsm_v2.norm);       
+        fprintf('ode45/mtsm_v2: %g\n',results.kepler_div_brackets.ode45.time/results.kepler_div_brackets.mtsm_v2.time);
+        fprintf('ode23/mtsm_v2: %g\n',results.kepler_div_brackets.ode23.time/results.kepler_div_brackets.mtsm_v2.time);
+        fprintf('ode15s/mtsm_v2: %g\n',results.kepler_div_brackets.ode15s.time/results.kepler_div_brackets.mtsm_v2.time);
+        fprintf('ode113/mtsm_v2: %g\n',results.kepler_div_brackets.ode113.time/results.kepler_div_brackets.mtsm_v2.time);
+        
+        
         
         fprintf('\n\n==== SYSTEM OF %d EQUATIONS (WITHOUT SQUARE ROOT AND DIVISION, FULLY SUBSTITUTED)====\n',results.kepler_div_full.n); 
         fprintf('ode45:  %g  steps: %d  ||norm||: %g \n',results.kepler_div_full.ode45.time, length(results.kepler_div_full.ode45.T)-1,results.kepler_div_full.ode45.norm);
@@ -314,7 +394,7 @@ function simulate(display,tol,tol_ode,tmax,dt,e)
         fprintf('ode15s/mtsm_basic: %g\n',results.kepler_div_full.ode15s.time/results.kepler_div_full.mtsm_basic.time);
         fprintf('ode113/mtsm_basic: %g\n',results.kepler_div_full.ode113.time/results.kepler_div_full.mtsm_basic.time);
         
-        fprintf('mtsm_v2\ntime: %g  steps: %d ORD: %g ||norm||: %g \n',results.kepler_div.mtsm_v2.time, length(results.kepler_div.mtsm_v2.T)-1,mean(results.kepler_div.mtsm_v2.ORD),results.kepler_div.mtsm_v2.norm);       
+        fprintf('mtsm_v2\ntime: %g  steps: %d ORD: %g ||norm||: %g \n',results.kepler_div_full.mtsm_v2.time, length(results.kepler_div_full.mtsm_v2.T)-1,mean(results.kepler_div_full.mtsm_v2.ORD),results.kepler_div_full.mtsm_v2.norm);       
         fprintf('ode45/mtsm_v2: %g\n',results.kepler_div_full.ode45.time/results.kepler_div_full.mtsm_v2.time);
         fprintf('ode23/mtsm_v2: %g\n',results.kepler_div_full.ode23.time/results.kepler_div_full.mtsm_v2.time);
         fprintf('ode15s/mtsm_v2: %g\n',results.kepler_div_full.ode15s.time/results.kepler_div_full.mtsm_v2.time);
@@ -384,7 +464,7 @@ function taylor_div(dt,tspan,init,tol,maxORD,e,display)
 
     b=zeros(ne,1);
     
-    ind=load('DY_indexes_maxORD_GN_ordered_all_60','DY_ij','DY_ijk', 'DY_ijklm');
+    ind=load('DY_indexes_maxORD_GN_ordered_all_60','DY_ij','DY_ijk','DY_ijklm');
     
     % standard implementation
     tic
@@ -432,7 +512,99 @@ function taylor_div(dt,tspan,init,tol,maxORD,e,display)
     end
 end
 
-%function [VS_T,VS_Y,VS_TIME,VS_ORD,VS_ANAL,GN_T,GN_Y,GN_TIME,GN_ORD,GN_ANAL] = taylor_fullAux(dt,tspan,init,tol,maxORD,e,display)
+function taylor_div_brackets(dt,tspan,init,tol,maxORD,e,display)
+    %     dy(1) = y(3);
+    %     dy(2) = y(4);
+    %     dy(3) = -y(1)*y(7); 
+    %     dy(4) = -y(2)*y(7); 
+    %     dy(5) = 3*y(6)*y(9)+3*y(6)*y(10);
+    %     dy(6) = y(8)*y(9)+y(8)*y(10);
+    %     dy(7) = -3*y(6)*y(7)*y(7)*y(9)-3*y(6)*y(7)*y(7)*y(10);
+    %     dy(8) = -y(8)*y(8)*y(8)*y(9) - y(8)*y(8)*y(8)*y(10);
+    %     dy(9) = y(3)*y(3) - y(7)*y(11);
+    %     dy(10) = y(4)*y(4)- y(7)*y(12);
+    %     dy(11) = 2*y(9);
+    %     dy(12) = 2*y(10);
+    
+    global results;
+    ne = 12;
+
+    A = zeros(ne,ne);
+    A(1,3) = 1;
+    A(2,4) = 1;
+    A(11,9) = 2;
+    A(12,10) = 2;
+    
+    ij = [
+        1,7;
+        2,7;
+        6,9;
+        6,10;
+        8,9;
+        8,10;
+        3,3;
+        7,11;
+        4,4;
+        7,12
+        ];
+    A2=zeros(ne,size(ij,1));
+    A2(3,1) = -1;
+    A2(4,2) = -1;
+    A2(5,3) = 3;
+    A2(5,4) = 3;
+    A2(6,5) = 1;
+    A2(6,6) = 1;
+    A2(9,7) = 1;
+    A2(9,8) = -1;
+    A2(10,9) = 1;
+    A2(10,10) = -1;
+    
+    ijk = [];
+    A3=zeros(ne,size(ijk,1)); 
+    
+    ijkl = [
+        6,7,7,9;
+        6,7,7,10;
+        8,8,8,9;
+        8,8,8,10;
+        ];
+    A4=zeros(ne,size(ijkl,1));
+    A4(7,1) = -3;
+    A4(7,2) = -3;
+    A4(8,3) = -1;
+    A4(8,4) = -1;
+    
+    ijklm = [];
+    A5=zeros(ne,size(ijklm,1));
+    
+    b=zeros(ne,1);
+    
+    ind=load('DY_indexes_maxORD_GN_ordered_all_60','DY_ij','DY_ijkl');
+    
+    % VS implementation
+    tic
+    [VS_T,VS_Y,VS_ORD,~] = explicitTaylorMult(dt,tspan,init,A,A2,A3,A4,A5,b,ij,ijk,ijkl,ijklm,tol,ind,maxORD);
+    VS_TIME=toc;
+    
+    results.kepler_div_brackets.mtsm_basic.time = VS_TIME;
+    results.kepler_div_brackets.mtsm_basic.T = VS_T;
+    results.kepler_div_brackets.mtsm_basic.Y = VS_Y;
+    results.kepler_div_brackets.mtsm_basic.ORD = VS_ORD;
+    results.kepler_div_brackets.mtsm_basic.norm = cnorm(1,(results.kepler_div_brackets.mtsm_basic.Y(1,:)+e).^2 + results.kepler_div_brackets.mtsm_basic.Y(2,:).^2/(1-e^2));    
+    
+    % GNPV implemetation
+    tic
+    [GN_T,GN_Y,GN_ORD,~] = explicitTaylorMult_GNPV_ver2_full(dt,tspan,init,A,A2,A3,A4,A5,b,ij,ijk,ijkl,ijklm,tol,ind,maxORD);
+    GN_TIME=toc;
+    
+    results.kepler_div_brackets.mtsm_v2.time = GN_TIME;
+    results.kepler_div_brackets.mtsm_v2.T = GN_T;
+    results.kepler_div_brackets.mtsm_v2.Y = GN_Y;
+    results.kepler_div_brackets.mtsm_v2.ORD = GN_ORD;
+    results.kepler_div_brackets.mtsm_v2.norm = cnorm(1,(results.kepler_div_brackets.mtsm_v2.Y(1,:)+e).^2 + results.kepler_div_brackets.mtsm_v2.Y(2,:).^2/(1-e^2));
+    
+end
+
 function taylor_div_full(dt,tspan,init,tol,maxORD,e,display)
     global results
     % System of ODEs
