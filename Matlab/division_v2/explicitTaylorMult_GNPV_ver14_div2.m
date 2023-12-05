@@ -1,4 +1,4 @@
-function [t,y,ORD,DY_all]=explicitTaylorMult_GNPV_ver14( ... 
+function [t,y,ORD,DY_all]=explicitTaylorMult_GNPV_ver14_div2( ... 
     h, ... size of the integration step
     tspan, ... times of calculation
     init, ... initial condition
@@ -118,6 +118,16 @@ else
     mult5 = true;
 end
 
+dij = [
+    3,3;
+    2,2;
+];
+C2 = zeros(ne, size(dij,1));
+
+d21 = dij(:,1);
+d22 = dij(:,2);
+
+
 %% MTSM calculation
 i=1; % timestep index
 t(i)=tspan(1,1);
@@ -135,16 +145,16 @@ i=i+1;
     y(:,i)=y(:,i-1); % first term of Taylor series y_{i+1}=y_{i}+...
     DY(:,1)=y(:,i);
     
-    %% set the matrix multiplier constants
-        K1 = 1/y(4,i);
-        K2 = (y(2,i)*y(3,i))/y(4,i);
-        
-%       dy(5) = K1*y(3)*y(3) - K1*y(2)*y(2) - K2*K1*y(4);
-        A(5,4) = -K2*K1;
-        B2(5,1) = K1;
-        B2(5,2) = -K1;
-    %% 
-    
+%     %% set the matrix multiplier constants
+%         K1 = 1/y(4,i);
+%         K2 = (y(2,i)*y(3,i))/y(4,i);
+%         
+% %       dy(5) = K1*y(3)*y(3) - K1*y(2)*y(2) - K2*K1*y(4);
+%         A(5,4) = -K2*K1;
+%         B2(5,1) = K1;
+%         B2(5,2) = -K1;
+%     %% 
+%     
     % linear term
     Ay=A*DY(:,1)+b;
 
@@ -208,7 +218,15 @@ i=i+1;
         A5y=A5*(DY(ijklm(:,1),1).*DY_5terms(:,1));
     end
     
-    DY(:,2)=h*(Ay+A2y+A3y+A4y+A5y); % first derivative  
+    %%% DIVISION EXPERIMENT
+    F=C2*(y(3,i)*y(3,i)-y(2,i)*y(2,i));
+    
+    G=zeros(ne,1);
+    G(5)= y(4,i);
+    G(5)= G(5)*y(5:0);
+    C=1/y(4,1)*(F-G); 
+    
+    DY(:,2)=h*(Ay+A2y+A3y+A4y+A5y+C); % first derivative  
     y(:,i)=y(:,i)+DY(:,2); % first term (first derivative)
 
     maxDY = ones(1,stopping)*10^10;
