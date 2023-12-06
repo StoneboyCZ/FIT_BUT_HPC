@@ -59,6 +59,9 @@ ne=length(init); % number of equations
 
 steps = round((tspan(2)-tspan(1))/h); % number of integration steps
 
+
+a = 2;
+
 % preallocation ORD, DY_all
 ORD=zeros(steps*30,1); % 30 possibilities of halfing integration stepsize
 ORD_tmp = zeros(3,1);
@@ -118,14 +121,20 @@ else
     mult5 = true;
 end
 
-dij = [
-    3,3;
-    2,2;
-];
-C2 = zeros(ne, size(dij,1));
+% dij = [
+%     3,3;
+%     2,2;
+% ];
+% C2 = zeros(ne, size(dij,1));
+% 
+% d21 = dij(:,1);
+% d22 = dij(:,2);
 
-d21 = dij(:,1);
-d22 = dij(:,2);
+C11 = zeros(ne);
+C11(3,3) = 1;
+
+C12 = zeros(ne);
+C12(3,2) = a;
 
 
 %% MTSM calculation
@@ -219,14 +228,25 @@ i=i+1;
     end
     
     %%% DIVISION EXPERIMENT
-    F=C2*(y(3,i)*y(3,i)-y(2,i)*y(2,i));
-    
-    G=zeros(ne,1);
-    G(5)= y(4,i);
-    G(5)= G(5)*y(5:0);
-    C=1/y(4,1)*(F-G); 
-    
-    DY(:,2)=h*(Ay+A2y+A3y+A4y+A5y+C); % first derivative  
+    y11 = zeros(ne, 1);
+    y11(1) = y(1,i);
+    F=C11*y11;
+
+    y12 = zeros(ne, 1);
+    y12(2) = y(2,i);
+    G = C12*y12;
+    G = y(3,1)*G;
+
+    C1 = h/y(2,1)*(F-G);
+
+%     F=C2*(y(3,i)*y(3,i)-y(2,i)*y(2,i));
+%     
+%     G=zeros(ne,1);
+%     G(5)= y(4,i);
+%     G(5)= G(5)*y(5:0);
+%     C=1/y(4,1)*(F-G); 
+%     
+    DY(:,2)=h*(Ay+A2y+A3y+A4y+A5y+C1); % first derivative  
     y(:,i)=y(:,i)+DY(:,2); % first term (first derivative)
 
     maxDY = ones(1,stopping)*10^10;
