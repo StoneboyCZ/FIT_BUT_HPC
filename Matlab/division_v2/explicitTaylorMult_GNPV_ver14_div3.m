@@ -1,4 +1,4 @@
-function [t,y,ORD,DY_all]=explicitTaylorMult_GNPV_ver14_div2( ... 
+function [t,y,ORD,DY_all]=explicitTaylorMult_GNPV_ver14_div3( ... 
     h, ... size of the integration step
     tspan, ... times of calculation
     init, ... initial condition
@@ -58,9 +58,6 @@ function [t,y,ORD,DY_all]=explicitTaylorMult_GNPV_ver14_div2( ...
 ne=length(init); % number of equations
 
 steps = round((tspan(2)-tspan(1))/h); % number of integration steps
-
-
-a = 2;
 
 % preallocation ORD, DY_all
 ORD=zeros(steps*30,1); % 30 possibilities of halfing integration stepsize
@@ -128,8 +125,6 @@ y(:,1)=init'; % initial values
 
 i=i+1;
 
-M = zeros(ne, 1);
-
 % while t(i-1)+ls_tol<tspan(1,2)
   %while t(i-1) <= tspan(1,2)
  while true
@@ -139,21 +134,10 @@ M = zeros(ne, 1);
     
     y(:,i)=y(:,i-1); % first term of Taylor series y_{i+1}=y_{i}+...
     DY(:,1)=y(:,i);
-
-    K1 = 1/y(2,i);
-    K2 = y(3,i); 
     
-%     K1 = 1/y(2);
-%     K2 = y(3);
-% 
-%     dy = zeros(3,1);
-%     dy(1) = y(3);
-%     dy(2) = a*y(2);
-%     dy(3) = K1*y(3)-K2*K1*a*y(2);
+    K1 = 1/DY(2,1);
+    K2 = DY(1,1);
     
-    A(3,1) = K1;
-    A(3,2) = -K2*K1*a;
-
     % linear term
     Ay=A*DY(:,1)+b;
 
@@ -169,6 +153,7 @@ M = zeros(ne, 1);
     ijklm2 = [2 1 1];
     ijklm3 = [1 2 1];
     ijklm4 = [1 1 2];
+
 
     if ~isempty(ij)
         A2y=A2*(DY(ij(:,1),1).*DY(ij(:,2),1));
@@ -215,8 +200,11 @@ M = zeros(ne, 1);
         
         A5y=A5*(DY(ijklm(:,1),1).*DY_5terms(:,1));
     end
-   
-    DY(:,2)=h*(Ay+A2y+A3y+A4y+A5y); % first derivative  
+    
+    D = zeros(2,1);
+    D(1) = K1*(y(1,1)-K2*y(2,1));    
+    
+    DY(:,2)=h*(Ay+A2y+A3y+A4y+A5y+D); % first derivative  
     y(:,i)=y(:,i)+DY(:,2); % first term (first derivative)
 
     maxDY = ones(1,stopping)*10^10;
@@ -225,8 +213,6 @@ M = zeros(ne, 1);
     mi = 0;
     while norm(maxDY)>eps
         % linear term
-        
-        %% DIVISON
         Ay=A*DY(:,k); % opraveno Vasek 23.10.2017
         % -------------------------------------------
         if ~isempty(ij)
@@ -317,12 +303,10 @@ M = zeros(ne, 1);
             A5y_new = DY(i5,1).*DY_5terms(:,k);
             A5y=A5*sum([A5y_calculated,A5y_new],2);
         end
-        %% DIVISION
         k_array = k:-1:2;
-        M(3) = -K1*sum(DY(2,k_array).*DY(3,k_array)); 
+        D(1) = K1*(h*DY(1,k) - sum(DY(1,k_array).*(DY(2,k_array))) - h*K2*DY(2,k));
         
-        DY(:,k+1)=(h/k)*(Ay+A2y+A3y+A4y+A5y+M);
-
+        DY(:,k+1)=(h/k)*(Ay+A2y+A3y+A4y+A5y+D);
         y(:,i)=y(:,i)+DY(:,k+1);
         
         mi = mi+1;

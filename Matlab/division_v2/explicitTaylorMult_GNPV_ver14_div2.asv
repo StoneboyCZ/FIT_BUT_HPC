@@ -151,9 +151,6 @@ M = zeros(ne, 1);
 %     dy(2) = a*y(2);
 %     dy(3) = K1*y(3)-K2*K1*a*y(2);
     
-    A(3,1) = K1;
-    A(3,2) = -K2*K1*a;
-
     % linear term
     Ay=A*DY(:,1)+b;
 
@@ -169,6 +166,9 @@ M = zeros(ne, 1);
     ijklm2 = [2 1 1];
     ijklm3 = [1 2 1];
     ijklm4 = [1 1 2];
+
+    D = zeros(ne,1);
+    D(3) = K1*(y(3) - K2*a*DY(1,1))
 
     if ~isempty(ij)
         A2y=A2*(DY(ij(:,1),1).*DY(ij(:,2),1));

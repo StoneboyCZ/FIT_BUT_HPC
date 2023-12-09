@@ -90,15 +90,15 @@ title('ERR - OH ODE45')
 % K2 = y(3);
 % 
 % dy = zeros(3,1);
-% dy(1) = y(3);
+% dy(1) = y(1)/y(2);
 % dy(2) = a*y(2);
-% dy(3) = K1*(y(3)-K2*a*y(2));
 
-ne = 3;
+y0 = [1;1];
+ne = 2;
 
 A = zeros(ne);
-A(1,3) = 1;
 A(2,2) = a;
+
 
 ij = []; B2 = [];
 
@@ -116,23 +116,13 @@ hScaleFactor = 1;
 eps = 1e-7;
 
 tic;
-[T_MTSM_OH,Y_MTSM_OH,ORD] = explicitTaylorMult_GNPV_ver14_div2(dt,tspan,y0,A,B2,B3,B4,B5,b,ij,ijk,ijkl,ijklm,eps,maxORD,minORD,hScaleFactor);
+[T_MTSM_OH,Y_MTSM_OH,ORD] = explicitTaylorMult_GNPV_ver14_div3(dt,tspan,y0,A,B2,B3,B4,B5,b,ij,ijk,ijkl,ijklm,eps,maxORD,minORD,hScaleFactor);
 TIME_MTSM_OH=toc;
-% 
-% figure
-% plot(T_MTSM_FK, abs(analfun(T_MTSM_FK)-Y_MTSM_FK(1,:)),'*')
-% grid on;
-% title('ERR - FK MTSM')
 
-
-
-
-% function dy = orig(t,y,a)
-%     dy = zeros(2,1);
-%     dy(1) = y(1)/y(2);
-%     dy(2) = a*y(2);
-% end
-
+figure
+plot(T_MTSM_OH, abs(analfun(T_MTSM_OH)-Y_MTSM_OH(1,:)),'*')
+grid on;
+title('ERR - OH MTSM')
 
 function dy = FK(~,y,a)
     dy = zeros(3,1);
@@ -148,5 +138,5 @@ function dy = OH(~,y,a)
     dy = zeros(3,1);
     dy(1) = y(3);
     dy(2) = a*y(2);
-    dy(3) = K1*(y(3)-K2*a*y(2));
+    dy(3) = K1*y(3)-K2*K1*a*y(2);
 end
