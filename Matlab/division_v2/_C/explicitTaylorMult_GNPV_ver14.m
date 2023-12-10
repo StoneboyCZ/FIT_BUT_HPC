@@ -1,4 +1,4 @@
-function [t,y,ORD,DY_all]=explicitTaylorMult_GNPV_ver14_div3( ... 
+function [t,y,ORD,DY_all]=explicitTaylorMult_GNPV_ver14( ... 
     h, ... size of the integration step
     tspan, ... times of calculation
     init, ... initial condition
@@ -135,9 +135,6 @@ i=i+1;
     y(:,i)=y(:,i-1); % first term of Taylor series y_{i+1}=y_{i}+...
     DY(:,1)=y(:,i);
     
-    K1 = 1/DY(2,1);
-    K2 = DY(1,1);
-    
     % linear term
     Ay=A*DY(:,1)+b;
 
@@ -201,10 +198,7 @@ i=i+1;
         A5y=A5*(DY(ijklm(:,1),1).*DY_5terms(:,1));
     end
     
-    D = zeros(2,1);
-    D(1) = DY(1,1);    
-    
-    DY(:,2)=h*(Ay+A2y+A3y+A4y+A5y+D); % first derivative  
+    DY(:,2)=h*(Ay+A2y+A3y+A4y+A5y); % first derivative  
     y(:,i)=y(:,i)+DY(:,2); % first term (first derivative)
 
     maxDY = ones(1,stopping)*10^10;
@@ -303,11 +297,8 @@ i=i+1;
             A5y_new = DY(i5,1).*DY_5terms(:,k);
             A5y=A5*sum([A5y_calculated,A5y_new],2);
         end
-        y_index = k-1:-1:1;
-        g_index = 2:1:k; 
-        D(1) = K1*(DY(1,k) - sum(DY(1,y_index).*DY(2,g_index)));
-        
-        DY(:,k+1)=(h/k)*(Ay+A2y+A3y+A4y+A5y+D);
+        DY(:,k+1)=(h/k)*(Ay+A2y+A3y+A4y+A5y);
+
         y(:,i)=y(:,i)+DY(:,k+1);
         
         mi = mi+1;
