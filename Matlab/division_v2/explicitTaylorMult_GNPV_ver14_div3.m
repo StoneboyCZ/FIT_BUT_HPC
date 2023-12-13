@@ -122,7 +122,6 @@ end
 i=1; % timestep index
 t(i)=tspan(1,1);
 y(:,1)=init'; % initial values
-
 i=i+1;
 
 % while t(i-1)+ls_tol<tspan(1,2)

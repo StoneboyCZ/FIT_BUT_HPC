@@ -73,22 +73,27 @@ grid on;
 title('ERR - FK MTSM')
 
 %% OH
-y0 = [1; 1; 0; 1];
+y0 = [1; 1; 0; 1; 1]; % 1/1
 dt = 0.1;
 tmax = 1;
 tspan = [0 tmax];
 
-% dy(1) = y(2)/y(4);
+% dy(1) = y(5)
 % dy(2) = -y(3);
 % dy(3) = y(2);
 % dy(4) = y(4);
 
-ne = 4;
+% y(5) = y(2)/y(4)
+
+ne = 5;
 
 A = zeros(ne);
+A(1,5) = 1;
 A(2,3) = -1;
 A(3,2) = 1;
 A(4,4) = 1;
+
+
 ij = []; B2 = [];
 
 ijk = []; B3 = [];
@@ -109,7 +114,7 @@ tic;
 TIME_MTSM_OH=toc;
 
 figure
-plot(T_MTSM_OH, Y_MTSM_OH(1,:),'*')
+plot(T_MTSM_OH, abs(Y_MTSM_FK(1,:)-Y_MTSM_OH(1,:)),'*')
 grid on;
 title('ERR - OH MTSM')
 

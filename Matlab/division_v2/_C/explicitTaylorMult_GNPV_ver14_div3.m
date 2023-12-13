@@ -133,6 +133,7 @@ i=i+1;
     DY=zeros(ne,maxORD+1);
     
     y(:,i)=y(:,i-1); % first term of Taylor series y_{i+1}=y_{i}+...
+    y(5,i)=y(2,i)/y(4,i);
     DY(:,1)=y(:,i);
     
     K1 = 1/DY(4,1);
@@ -200,10 +201,6 @@ i=i+1;
         A5y=A5*(DY(ijklm(:,1),1).*DY_5terms(:,1));
     end
     
-    Y0 = DY(2,1)/DY(4,1); 
-
-    D = zeros(4,1);
-    D(1) = Y0;    
     
     DY(:,2)=h*(Ay+A2y+A3y+A4y+A5y+D); % first derivative  
     y(:,i)=y(:,i)+DY(:,2); % first term (first derivative)
