@@ -65,6 +65,8 @@ tic;
 [T_MTSM_FK,Y_MTSM_FK,ORD] = explicitTaylorMult_GNPV_ver14(dt,tspan,y0,A,B2,B3,B4,B5,b,ij,ijk,ijkl,ijklm,eps,maxORD,minORD,hScaleFactor);
 TIME_MTSM_FK=toc;
 
+Y_MTSM_FK(1,:)
+
 figure
 plot(T_MTSM_FK, Y_MTSM_FK(1,:),'*')
 grid on;
@@ -111,7 +113,7 @@ plot(T_MTSM_OH, Y_MTSM_OH(1,:),'*')
 grid on;
 title('ERR - OH MTSM')
 
-Y_MTSM_OH(1,:)
+% Y_MTSM_OH(1,:)
 
 
 
