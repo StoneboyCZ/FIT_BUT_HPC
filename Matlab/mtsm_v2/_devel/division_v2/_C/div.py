@@ -68,18 +68,20 @@ for i in range(1,steps+1):
     DY4.append(h*(1*DY4[0]))
     DY5.append((1/DY4[0])*(DY2[k] - DY5[0]*DY4[k]))
 
+
+
     y1[-1] = y1[-1] + DY1[-1]
     y2[-1] = y2[-1] + DY2[-1]
     y3[-1] = y3[-1] + DY3[-1]
     y4[-1] = y4[-1] + DY4[-1]
     y5[-1] = y5[-1] + DY5[-1]
 
-    #print(f'k {k}: DY1 {DY1[-1]} \t DY2 {DY2[-1]} \t DY3 {DY3[-1]} \t DY4 {DY4[-1]} ')
+    print(f'k {k}: DY1 {DY1[-1]} \t DY2 {DY2[-1]} \t DY3 {DY3[-1]} \t DY4 {DY4[-1]} \t DY5 {DY5[-1]} ')
 
     #while (abs(DY1[-1]) > eps) and (abs(DY2[-1]) > eps) and (abs(DY3[-1]) > eps) and (abs(DY4[-1]) > eps):
-    while k < 15:
+    while k < 5:
         k = k+1
-        print(f'k: {k}')
+        #print(f'k: {k}')
         DY1.append((h/k)*(1*DY5[k-1]))
         DY2.append((h/k)*(-1*DY3[k-1]))
         DY3.append((h/k)*(1*DY2[k-1]))
@@ -96,6 +98,8 @@ for i in range(1,steps+1):
             m = m-1
         
         DY5.append((1/DY4[0])*(DY2[k]-mixed))
+
+        print(f'k {k}: DY1 {DY1[-1]} \t DY2 {DY2[-1]} \t DY3 {DY3[-1]} \t DY4 {DY4[-1]} \t DY5 {DY5[-1]} ')
 
         y1[-1] = y1[-1] + DY1[-1]
         y2[-1] = y2[-1] + DY2[-1]

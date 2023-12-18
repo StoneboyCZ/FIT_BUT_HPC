@@ -1,23 +1,24 @@
-function [t,y,ORD,DY_all]=taylor( ... 
+function [t,y,ORD,DY_all]=taylor_v5( ... 
     h, ... size of the integration step
     tspan, ... times of calculation
     init, ... initial conditions for the system
+    eps, ...  accuracy
     A, ... Jacobian for the linear part of the system
     b, ...  vector of constants (right-hand side)
-    d, ... terms in the divisions
     m, ... terms in the multiplications
+    d, ... terms in the divisions
     index_l, ... indexes of linear part,
-    index_d, ... indexes for division,
     index_m, ... indexes for multiplication,
-    eps, ...  accuracy
+    index_d, ... indexes for division,
     maxORD, ... maximum order of the Taylor series
     minORD, ... minimum ord needed for step increase 
     hScaleFactor ... how h is scaled (hnew = h*hscalefactor) when ORD is stable
     )
 
 ne_ode = size(A, 1); % number of ODEs
-ne_div = size(d, 1); % number of divisions
 ne_mult = size(m,1); % number of multiplications
+ne_div = size(d, 1); % number of divisions
+ne = ne_ode+ne_mult+ne_div;
 
 steps = round((tspan(2)-tspan(1))/h); % number of integration steps
 
@@ -34,14 +35,25 @@ ls_tol = 10^-10;
 
 scaleIndex = 1;
 
-if ~isempty(d)
-    d1=d(:,1);
-    d2=d(:,2);
-end
-
+multiplication = true;
 if ~isempty(m)
     m1 = m(:,1);
     m2 = m(:,2);
+else
+    multiplication = false;
+end
+
+division = true;
+if ~isempty(d)
+    d1=d(:,1);
+    d2=d(:,2);
+else
+    division = false;
+end
+
+linear = true;
+if multiplication || division
+    linear = false;
 end
 
 %% MTSM calculation
@@ -53,33 +65,45 @@ i=i+1;
 
 
 while true
-    DY=zeros(ne_ode+ne_div+ne_mult,maxORD+1);
-    DY_lin=zeros(ne_ode,maxORD+1);
-    DY_div=zeros(ne_div,maxORD+1);
-    DY_mult=zeros(ne_mult,maxORD+1);
+    DY=zeros(ne,maxORD+1);
 
     y(:,i)=y(:,i-1); % first term of Taylor series y_{i+1}=y_{i}+...
-    y(index_d,i) = y(d1,i)./y(d2,i);
-    y(index_m,i) = y(m1,i).*y(m2,i);
-
-    DY_lin(:,1) = y(index_l,i);
-    DY_div(:,1) = y(index_d,i);
-    DY_mult(:,1) = y(index_m,i);
-    DY(:,1)=[DY_lin(:,1);DY_div(:,1);DY_mult(:,1)];
+    
+    if multiplication
+        y(index_m,i) = y(m1,i).*y(m2,i);
+    end
+    
+    if division
+        y(index_d,i) = y(d1,i)./y(d2,i);
+    end
+    
+    DY(:,1) = y(:,i);
 
     % division constant
     
-    B1 = eye(ne_div)*(1./DY(d2,1));
-
-
+    if division
+        B1 = 1./DY(d2,1);
+        B1 = B1';
+    end
+    
     %% first  derivative
     Ay=A*DY(:,1)+b;
-    DY_lin(:,2)=h*(Ay); % first derivative
-    DY_div(:,2)=B1*(DY_lin(d1,2)-DY_div(:,1).*DY_lin(d2,2));
-    DY_mult(:,2)=DY_lin(m1,2).*DY_lin(m2,1) + DY_lin(m1,1).*DY_lin(m2,2);
-    DY(:,2) = [DY_lin(:,2);DY_div(:,2);DY_mult(:,2)];
+    
+    if linear
+        DY(:,2)=h*(Ay); % first derivative
+    else
+        DY(index_l,2)=h*(Ay); % first derivative
+    end
+    
+    if multiplication
+        DY(index_m,2)=DY(m1,2).*DY(m2,1) + DY(m1,1).*DY(m2,2);
+    end
 
-    y(:,i)=y(:,i)+DY(:,2); % first term (first derivative)
+    if division
+        DY(index_d,2)=B1*(DY(d1,2)-DY(index_d,1).*DY(d2,2));
+    end
+    
+%     y(:,i)=y(:,i)+DY(:,2); % first term (first derivative)
 
     maxDY = ones(1,stopping)*10^10;
 
@@ -87,17 +111,33 @@ while true
     k=2;
     mi = 0;
     while norm(maxDY)>eps
-        i1 = k:-1:1;
-        i2 = 2:1:k+1;
-        j1 = k+1:-1:1;
-        j2 = 1:k+1;
-        Ay=A*DY(:,k); % opraveno Vasek 23.10.2017
+        if division
+            i1 = k:-1:1;
+            i2 = 2:1:k+1;
+        end
         
-        DY_lin(:,k+1)= (h/k)*(Ay);
-        DY_div(:,k+1)= B1*(DY_lin(d1,k+1) - sum(DY_div(:,i1).*DY_lin(d2,i2)));
-        DY_mult(:,k+1) = sum(DY_lin(m1,j1).*DY_lin(m2,j2));
-        DY(:,k+1) = [DY_lin(:,k+1);DY_div(:,k+1);DY_mult(:,k+1)];
-        y(:,i)=y(:,i)+DY(:,k+1);
+        if multiplication
+            j1 = k+1:-1:1;
+            j2 = 1:k+1;
+        end
+        Ay=A*DY(:,k);
+        
+        if linear
+            DY(:,k+1) = (h/k)*(Ay);
+        else
+            DY(index_l,k+1) = (h/k)*(Ay);
+        end
+        
+        if multiplication
+            DY(index_m,k+1) = sum(DY(m1,j1).*DY(m2,j2),2);
+        end
+
+        if division
+            DY(index_d,k+1) = B1*(DY(d1,k+1) - sum(DY(index_d,i1).*DY(d2,i2),2));
+        end
+        
+        
+%         y(:,i)=y(:,i)+DY(:,k+1);
         
         mi = mi+1;
         maxDY(mi)=max(abs(DY(:,k+1)));
@@ -110,10 +150,6 @@ while true
         if k > maxORD % max ORD was reached
             break;
         end
-        
-%         ij1 = k:-1:1; 
-%         ij2 = 1:k;
-%         
     end
 
     if k > maxORD % max ORD was reached
@@ -137,8 +173,11 @@ while true
             end
         end
         
+        y(:,i) = sum(DY,2);
+
         if t(i)+h > tspan(1,2)
             h = tspan(1,2) - t(i);
+            
         end
         
         if t(i)+ls_tol<tspan(1,2)

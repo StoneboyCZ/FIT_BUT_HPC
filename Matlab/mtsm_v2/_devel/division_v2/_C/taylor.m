@@ -1,23 +1,32 @@
 function [t,y,ORD,DY_all]=taylor( ... 
     h, ... size of the integration step
     tspan, ... times of calculation
-    init, ... initial conditions for the system
+    init, ... initial condition
     A, ... Jacobian for the linear part of the system
     b, ...  vector of constants (right-hand side)
-    d, ... terms in the divisions
-    m, ... terms in the multiplications
-    index_l, ... indexes of linear part,
-    index_d, ... indexes for division,
-    index_m, ... indexes for multiplication,
     eps, ...  accuracy
     maxORD, ... maximum order of the Taylor series
     minORD, ... minimum ord needed for step increase 
     hScaleFactor ... how h is scaled (hnew = h*hscalefactor) when ORD is stable
     )
+%  [t,y,ORD]=taylor(h,tspan,init,A,B3,C,d,eps)
+%  Numerical solution of ODEs with explicit Taylor series method
+%  problem y' = A*y^2 + B3*y_iy_jy_k + C*y + d
+%  problem y' = A*y + A2*y_ij + A3*y_ijk + A4*y_ijkl + A5*y_ijklm
+%  where A is linear term matrix,
+%        A2 quadrature term matrix,
+%        A3 cubature term combinations matrix,
+%        ....
+%        ij,ijk,... indexes on y_i*y_j... multiplications
+%  and   b is a vector of constants (right-hand side)
+%  ---------------------------------------------------------------
+%  h ... integration step size
+%  tmax ... interval of numerical solution [0,tmax]
+%  ORD ... order of Taylor series - number of Taylor series Terms
+%  DY ... cell of all derivatives in each time step DY [y; dy; ddy; d3y; ...]
 
-ne_ode = size(A, 1); % number of ODEs
-ne_div = size(d, 1); % number of divisions
-ne_mult = size(m,1); % number of multiplications
+
+ne=length(init); % number of equations
 
 steps = round((tspan(2)-tspan(1))/h); % number of integration steps
 
@@ -34,69 +43,45 @@ ls_tol = 10^-10;
 
 scaleIndex = 1;
 
-if ~isempty(d)
-    d1=d(:,1);
-    d2=d(:,2);
-end
-
-if ~isempty(m)
-    m1 = m(:,1);
-    m2 = m(:,2);
-end
-
 %% MTSM calculation
 i=1; % timestep index
 t(i)=tspan(1,1);
-y(:,1)=init; % initial values
+y(:,1)=init'; % initial values
 
 i=i+1;
 
-
 while true
-    DY=zeros(ne_ode+ne_div+ne_mult,maxORD+1);
-    DY_lin=zeros(ne_ode,maxORD+1);
-    DY_div=zeros(ne_div,maxORD+1);
-    DY_mult=zeros(ne_mult,maxORD+1);
-
-    y(:,i)=y(:,i-1); % first term of Taylor series y_{i+1}=y_{i}+...
-    y(index_d,i) = y(d1,i)./y(d2,i);
-    y(index_m,i) = y(m1,i).*y(m2,i);
-
-    DY_lin(:,1) = y(index_l,i);
-    DY_div(:,1) = y(index_d,i);
-    DY_mult(:,1) = y(index_m,i);
-    DY(:,1)=[DY_lin(:,1);DY_div(:,1);DY_mult(:,1)];
-
-    % division constant
+    DY=zeros(ne,maxORD+1);
     
-    B1 = eye(ne_div)*(1./DY(d2,1));
-
-
-    %% first  derivative
+    y(:,i)=y(:,i-1); % first term of Taylor series y_{i+1}=y_{i}+...
+    DY(:,1)=y(:,i);
+    
+    % linear term
     Ay=A*DY(:,1)+b;
-    DY_lin(:,2)=h*(Ay); % first derivative
-    DY_div(:,2)=B1*(DY_lin(d1,2)-DY_div(:,1).*DY_lin(d2,2));
-    DY_mult(:,2)=DY_lin(m1,2).*DY_lin(m2,1) + DY_lin(m1,1).*DY_lin(m2,2);
-    DY(:,2) = [DY_lin(:,2);DY_div(:,2);DY_mult(:,2)];
 
+
+%     if ~isempty(ij)
+%         A2y=A2*(DY(ij(:,1),1).*DY(ij(:,2),1));
+%     end
+    
+    
+    DY(:,2)=h*(Ay+A2y+A3y+A4y+A5y); % first derivative  
     y(:,i)=y(:,i)+DY(:,2); % first term (first derivative)
 
     maxDY = ones(1,stopping)*10^10;
 
-    %%% second and additional derivatives
     k=2;
     mi = 0;
     while norm(maxDY)>eps
-        i1 = k:-1:1;
-        i2 = 2:1:k+1;
-        j1 = k+1:-1:1;
-        j2 = 1:k+1;
+        % linear term
         Ay=A*DY(:,k); % opraveno Vasek 23.10.2017
-        
-        DY_lin(:,k+1)= (h/k)*(Ay);
-        DY_div(:,k+1)= B1*(DY_lin(d1,k+1) - sum(DY_div(:,i1).*DY_lin(d2,i2)));
-        DY_mult(:,k+1) = sum(DY_lin(m1,j1).*DY_lin(m2,j2));
-        DY(:,k+1) = [DY_lin(:,k+1);DY_div(:,k+1);DY_mult(:,k+1)];
+        % -------------------------------------------
+%         if ~isempty(ij)
+%             A2y=A2*sum(DY(i2,ij1).*DY(j2,ij2),2);
+%         end
+
+        DY(:,k+1)=(h/k)*(Ay+A2y+A3y+A4y+A5y);
+
         y(:,i)=y(:,i)+DY(:,k+1);
         
         mi = mi+1;
@@ -110,29 +95,38 @@ while true
         if k > maxORD % max ORD was reached
             break;
         end
-        
-%         ij1 = k:-1:1; 
-%         ij2 = 1:k;
-%         
     end
 
     if k > maxORD % max ORD was reached
         h=h/2; % we use half-size integration step
         fprintf('GN: Halving integration step size.\n')
     else
+%         DY_all{i-1}=DY;
+%         if k<(stopping+4)
+%             h=h*2;
+%             Hk=(h.^iPascal_mixed)./fact_k;
+%             fprintf('Increasing integration step size.\n')
+%         end
+        %DY(:,1:k+1)
         ORD(i)=k;
         ORD_tmp(scaleIndex) = k;
         scaleIndex = scaleIndex + 1;
         if scaleIndex == 4
             scaleIndex = 1;
         end
+        %scaleCount = scaleCount+k;
+        %if scaleCount > 3*minORD  
+        %    scaleCount = 0;
+        %end
         t(i)=t(i-1)+h;
         
         if i > stopping 
             if hScaleFactor > 1
+        %       if sum(ORD(i-stopping+1:i) < minORD) == 3
                 scaleCount = ORD_tmp(1)+ORD_tmp(2)+ORD_tmp(3); 
                 if scaleCount == 3*minORD
                     h = h*hScaleFactor;
+    %                 scaleCount = 0;
                 end
             end
         end
@@ -150,6 +144,5 @@ while true
 end
 
 % shrink the rest (empty) array
+% ORD(i:end)=[];
 ORD(i+1:end)=[];
-
-

@@ -1,4 +1,4 @@
-function [t,y,ORD,DY_all]=taylor( ... 
+function [t,y,ORD,DY_all]=taylor_v2( ... 
     h, ... size of the integration step
     tspan, ... times of calculation
     init, ... initial conditions for the system
@@ -54,18 +54,15 @@ i=i+1;
 
 while true
     DY=zeros(ne_ode+ne_div+ne_mult,maxORD+1);
-    DY_lin=zeros(ne_ode,maxORD+1);
-    DY_div=zeros(ne_div,maxORD+1);
-    DY_mult=zeros(ne_mult,maxORD+1);
+%     DY_lin=zeros(ne_ode,maxORD+1);
+%     DY_div=zeros(ne_div,maxORD+1);
+%     DY_mult=zeros(ne_mult,maxORD+1);
 
     y(:,i)=y(:,i-1); % first term of Taylor series y_{i+1}=y_{i}+...
     y(index_d,i) = y(d1,i)./y(d2,i);
     y(index_m,i) = y(m1,i).*y(m2,i);
 
-    DY_lin(:,1) = y(index_l,i);
-    DY_div(:,1) = y(index_d,i);
-    DY_mult(:,1) = y(index_m,i);
-    DY(:,1)=[DY_lin(:,1);DY_div(:,1);DY_mult(:,1)];
+    DY(:,1) = y(:,i);
 
     % division constant
     
@@ -74,10 +71,9 @@ while true
 
     %% first  derivative
     Ay=A*DY(:,1)+b;
-    DY_lin(:,2)=h*(Ay); % first derivative
-    DY_div(:,2)=B1*(DY_lin(d1,2)-DY_div(:,1).*DY_lin(d2,2));
-    DY_mult(:,2)=DY_lin(m1,2).*DY_lin(m2,1) + DY_lin(m1,1).*DY_lin(m2,2);
-    DY(:,2) = [DY_lin(:,2);DY_div(:,2);DY_mult(:,2)];
+    DY(index_l,2)=h*(Ay); % first derivative
+    DY(index_d,2)=B1*(DY(d1,2)-DY(index_d,1).*DY(d2,2));
+    DY(index_m,2)=DY(m1,2).*DY(m2,1) + DY(m1,1).*DY(m2,2);
 
     y(:,i)=y(:,i)+DY(:,2); % first term (first derivative)
 
@@ -91,12 +87,12 @@ while true
         i2 = 2:1:k+1;
         j1 = k+1:-1:1;
         j2 = 1:k+1;
+
         Ay=A*DY(:,k); % opraveno Vasek 23.10.2017
         
-        DY_lin(:,k+1)= (h/k)*(Ay);
-        DY_div(:,k+1)= B1*(DY_lin(d1,k+1) - sum(DY_div(:,i1).*DY_lin(d2,i2)));
-        DY_mult(:,k+1) = sum(DY_lin(m1,j1).*DY_lin(m2,j2));
-        DY(:,k+1) = [DY_lin(:,k+1);DY_div(:,k+1);DY_mult(:,k+1)];
+        DY(index_l,k+1) = (h/k)*(Ay);
+        DY(index_d,k+1) = B1*(DY(d1,k+1) - sum(DY(index_d,i1).*DY(d2,i2)));
+        DY(index_m,k+1) = sum(DY(m1,j1).*DY(m2,j2));
         y(:,i)=y(:,i)+DY(:,k+1);
         
         mi = mi+1;
