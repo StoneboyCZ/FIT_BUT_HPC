@@ -137,7 +137,7 @@ y100 = y60*y80;
 y110 = y10/y50;
 y120 = y20/y50;
 y130 = y70/y60;
-y140 = y80/y90;
+y140 = y80/y60;
 y01 = [y10; y20; y30; y40; y50; y60; y70; y80; y90; y100; y110; y120; y130; y140];
 
 % dy(1) = y(3);
@@ -203,18 +203,18 @@ for i=1:RUNS
     TIMES_MTSM_OPT(1,i) = toc;
 
     tic;
-    [T_MTSM_OH,Y_MTSM_OH,ORD] = taylor_v4(dt,tspan,y01,eps,A1,b1,m,d,index_l,index_m,index_d,maxORD,minORD,hScaleFactor);
+    [T_MTSM_OH,Y_MTSM_OH,ORD] = taylor_v51(dt,tspan,y01,eps,A1,b1,m,d,index_l,index_m,index_d,maxORD,minORD,hScaleFactor);
     TIMES_MTSM_OH(1,i)=toc;
 end
 
-mean(TIMES_ODE453)
-mean(TIMES_MTSM_VS)
-mean(TIMES_MTSM_OPT)
+mean(TIMES_ODE453);
+mean(TIMES_MTSM_VS);
+mean(TIMES_MTSM_OPT);
 mean(TIMES_MTSM_OH)
 
-err45 = norm(analfun(Y_ODE453(:,1),Y_ODE453(:,2),e))
-errvs = norm(analfun(Y_MTSM_VS(1,:),Y_MTSM_VS(2,:),e))
-erropt = norm(analfun(Y_MTSM(1,:),Y_MTSM(2,:),e))
+err45 = norm(analfun(Y_ODE453(:,1),Y_ODE453(:,2),e));
+errvs = norm(analfun(Y_MTSM_VS(1,:),Y_MTSM_VS(2,:),e));
+erropt = norm(analfun(Y_MTSM(1,:),Y_MTSM(2,:),e));
 erroh = norm(analfun(Y_MTSM_OH(1,:),Y_MTSM_OH(2,:),e))
 
 function dy = ode1(t,y)
