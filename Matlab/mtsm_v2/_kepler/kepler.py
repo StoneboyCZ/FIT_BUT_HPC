@@ -217,7 +217,6 @@ for i in range(1,steps+1):
         
         DY9.append(sum)
 
-
         l = k
         m = 0
         sum = 0
@@ -254,7 +253,6 @@ for i in range(1,steps+1):
             m = m-1
         
         DY12.append((1/DY5[0])*(DY2[k]-mixed))
-
 
         l = 1
         m = k-1
