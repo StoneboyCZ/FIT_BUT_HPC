@@ -92,7 +92,7 @@ while true
     % division constant
     
     if division
-        B1 = eye(ne_div).*((1./DY(d2,1))');
+        B1 = ones(ne_div,1).*DY(d2,1);
     end
     
     %% first  derivative
@@ -110,7 +110,7 @@ while true
     end
 
     if division
-        DY(index_d,2)=B1*(DY(d1,2)-DY(index_d,1).*DY(d2,2));
+        DY(index_d,2)=B1.*(DY(d1,2)-DY(index_d,1).*DY(d2,2));
     end
     
     maxDY = ones(1,stopping)*10^10;
@@ -142,7 +142,7 @@ while true
         end
 
         if division
-             DY(index_d,k+1) = B1*(DY(d1,k+1) - sum(DY(index_d,i1).*DY(d2,i2),2));
+             DY(index_d,k+1) = B1.*(DY(d1,k+1) - sum(DY(index_d,i1).*DY(d2,i2),2));
         end
         
         

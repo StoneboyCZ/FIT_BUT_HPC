@@ -303,6 +303,8 @@ mean(TIMES_MTSM_OH)
 mean(TIMES_MTSM_FK)
 mean(TIMES_MTSM_VS)
 
+ratio 
+
 
 % ne = 12;
 % 

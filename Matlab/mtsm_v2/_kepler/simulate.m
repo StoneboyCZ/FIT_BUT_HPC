@@ -1,3 +1,5 @@
+addpath(genpath('../../_solvers'))
+
 %%% KEPLER PROBLEM
 clc;
 close all;
@@ -6,12 +8,19 @@ analfun = @(y1,y2,e) (y1+e).*(y1+e) + (y2.*y2)/(1-e*e) - 1;
 
 %% parameters
 e = 0.75;
-RUNS = 10;
+RUNS = 200;
 
-tmax = 2*pi;
+cycles=2; % number of rotations
+
+% number of steps for one rotation
+% nSteps=20; % e=0.25
+% nSteps=50; % e=0.5
+nSteps=100; % e=0.75
+dt=(2*pi)/nSteps; % integration stepsize
+tmax = cycles*2*pi;
 tspan = [0 tmax];
 options = odeset('RelTol',1e-13,'AbsTol',1e-15);
-dt = 0.025;
+
 
 maxORD = 63;
 minORD = 10;
@@ -36,7 +45,7 @@ for i=1:RUNS
     TIMES_ODE451(1,i) = toc;
 end
 
-mean(TIMES_ODE451)
+mean(TIMES_ODE451);
 % 
 % figure
 % plot(Y_ODE451(:,1),Y_ODE451(:,2));
@@ -60,7 +69,7 @@ for i=1:RUNS
     TIMES_ODE452(1,i) = toc;
 end
 
-mean(TIMES_ODE452)
+mean(TIMES_ODE452);
 
 % figure
 % plot(Y_ODE452(:,1),Y_ODE452(:,2));
@@ -130,6 +139,8 @@ y30 = 0;
 y40 = sqrt((1+e)/(1-e));
 y50 = sqrt((y10*y10 + y20*y20)*(y10*y10 + y20*y20)*(y10*y10 + y20*y20));
 y60 = sqrt((y10*y10 + y20*y20));
+y00 = [y10; y20; y30; y40; y50; y60];
+
 y70 = y10*y30;
 y80 = y20*y40;
 y90 = y60*y70; 
@@ -149,8 +160,10 @@ y01 = [y10; y20; y30; y40; y50; y60; y70; y80; y90; y100; y110; y120; y130; y140
 % 
 % y(7) = y(1)*y(3)
 % y(8) = y(2)*y(4)
+
 % y(9) = y(6)*y(7)
 % y(10) = y(6)*y(8)
+
 % y(11) = y(1)/y(5)
 % y(12) = y(2)/y(5)
 % y(13) = y(7)/y(6)
@@ -158,6 +171,7 @@ y01 = [y10; y20; y30; y40; y50; y60; y70; y80; y90; y100; y110; y120; y130; y140
 
 index_l = 1:6;
 index_m = 7:8;
+index_m2 = 9:10;
 index_d = 11:14;
 
 A1 = zeros(6,ne);
@@ -166,15 +180,20 @@ A1(2,4) = 1;
 A1(3,11) = -1;
 A1(4,12) = -1;
 A1(5,9) = 3;
-A2(5,10) = 3;
-A2(6,13) = 1;
-A2(6,14) = 1;
+A1(5,10) = 3;
+A1(6,13) = 1;
+A1(6,14) = 1;
 
 b1 = zeros(6,1);
 
-m = [
+m1 = [
     1,3;
     2,4;    
+];
+
+m2 = [
+    6,7;
+    6,8;
 ];
 
 d = [
@@ -203,13 +222,13 @@ for i=1:RUNS
     TIMES_MTSM_OPT(1,i) = toc;
 
     tic;
-    [T_MTSM_OH,Y_MTSM_OH,ORD] = taylor_v51(dt,tspan,y01,eps,A1,b1,m,d,index_l,index_m,index_d,maxORD,minORD,hScaleFactor);
+    [T_MTSM_OH,Y_MTSM_OH,ORD] = taylor_v7(dt,tspan,y00,eps,A1,b1,m1,m2,d,maxORD,minORD,hScaleFactor);
     TIMES_MTSM_OH(1,i)=toc;
 end
 
-mean(TIMES_ODE453);
-mean(TIMES_MTSM_VS);
-mean(TIMES_MTSM_OPT);
+mean(TIMES_ODE453)
+mean(TIMES_MTSM_VS)
+mean(TIMES_MTSM_OPT)
 mean(TIMES_MTSM_OH)
 
 err45 = norm(analfun(Y_ODE453(:,1),Y_ODE453(:,2),e));
